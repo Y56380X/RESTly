@@ -31,10 +31,11 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 		var (attributes, additionalTexts) = (generationBase.Item1, generationBase.Item2);
 
 		// Generate API client code based on the given definition file names of the assembly attributes
-		var clientDefinitions = attributes.Select(a => a.ConstructorArguments[0].Value as string);
-		foreach (var clientDefinition in clientDefinitions)
+		var clientDefinitions = attributes.Select(a => 
+			(a.ConstructorArguments[0].Value as string, a.ConstructorArguments[1].Value as string));
+		foreach (var (clientDefinition, clientName) in clientDefinitions)
 		{
-			if (string.IsNullOrWhiteSpace(clientDefinition))
+			if (string.IsNullOrWhiteSpace(clientDefinition) || string.IsNullOrWhiteSpace(clientName))
 				return; // todo: write analyzer message
 
 			var definitionFile = additionalTexts.SingleOrDefault(a => a.Path.EndsWith(clientDefinition));
@@ -48,8 +49,9 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 				LoadExternalRefs = false
 			});
 			var apiSpecification = openApiReader.Read(definitionContent, out _);
+			apiSpecification.Info.Title = clientName;
 			var apiClientCode = GenerateApiClientCode(apiSpecification);
-			context.AddSource("ApiClient.g.cs", SourceText.From(apiClientCode, Encoding.UTF8)); // todo: generate source file name based on client name
+			context.AddSource($"{clientName}.g.cs", SourceText.From(apiClientCode, Encoding.UTF8));
 		}
 	}
 
@@ -66,7 +68,7 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			  
 			  namespace Restly;
 			  
-			  public class ApiClient : IDisposable
+			  public class {{apiSpecification.Info.Title}} : IDisposable
 			  {
 			  {{"\t"}}private readonly HttpClient _httpClient;
 			  

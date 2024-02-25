@@ -18,7 +18,7 @@ public class FoundationSourceGenerator : IIncrementalGenerator
 		    [System.AttributeUsage(System.AttributeTargets.Assembly)]
 		    public class RestlyClientAttribute : System.Attribute
 		    {
-		        public RestlyClientAttribute(string clientDefinition) { }
+		        public RestlyClientAttribute(string clientDefinition, string clientName) { }
 		    }
 		}
 		""";
