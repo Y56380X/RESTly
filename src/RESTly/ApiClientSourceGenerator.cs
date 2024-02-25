@@ -16,7 +16,8 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 	private static readonly IDictionary<OperationType, string> HttpMethodMapping =
 		new Dictionary<OperationType, string>
 		{
-			{ OperationType.Head, "HttpMethod.Head" }
+			{ OperationType.Head, "HttpMethod.Head" },
+			{ OperationType.Get , "HttpMethod.Get" }
 		};
 	
 	public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -137,13 +138,16 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			.SelectMany(r => r.Value.Content.Select(c => c.Value))
 			.FirstOrDefault();
 		
-		var callsCode = GenerateCallCode(pathTemplate, operationType, response);
+		var callsCode = GenerateCallCode(pathTemplate, operationType, operation.Parameters, response);
 		return callsCode;
 	}
 
-	private static string GenerateCallCode(string pathTemplate, OperationType operationType, OpenApiMediaType? response)
+	private static string GenerateCallCode(string pathTemplate, OperationType operationType, IEnumerable<OpenApiParameter> parameters, OpenApiMediaType? response)
 	{
 		var methodName = GenerateMethodName();
+		var methodArguments = parameters
+			.Select(GenerateMethodArgumentCode)
+			.ToList();
 		var responseType = response is { Schema: not null}
 			? $"Response<{response.Schema.ToCsType()}>"
 			: "Response";
@@ -152,6 +156,7 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 		var callCodeBuilder = new StringBuilder();
 		callCodeBuilder.AppendLine($"""using var request = new HttpRequestMessage({httpMethod}, $"{pathTemplate}");""");
 		// todo: set request body when operation has one
+		// todo: prepend method body argument when operation has one
 		callCodeBuilder.AppendLine($"{"\t\t"}using var response = await _httpClient.SendAsync(request);");
 		if (response is { Schema: not null })
 		{
@@ -171,7 +176,7 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 		
 		var callCode = 
 			$$"""
-			  {{"\t"}}public async Task<{{responseType}}> {{methodName}}()
+			  {{"\t"}}public async Task<{{responseType}}> {{methodName}}({{string.Join(", ", methodArguments)}})
 			  {{"\t"}}{
 			  {{"\t\t"}}{{callCodeBuilder}}
 			  {{"\t\t"}}return new {{responseType}}({{string.Join(", ", responseArguments)}});
@@ -187,5 +192,8 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 				.Select(f => f.Capitalize());
 			return $"{operationType}{string.Concat(methodFragments)}Async"; // todo: generate better methods names (take response and parameters into account)
 		}
+
+		string GenerateMethodArgumentCode(OpenApiParameter parameter) => 
+			$"{parameter.Schema.ToCsType()} {parameter.Name}";
 	}
 }
