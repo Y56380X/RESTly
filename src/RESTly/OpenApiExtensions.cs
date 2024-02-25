@@ -11,12 +11,13 @@ internal static class OpenApiExtensions
 	{
 		var baseType = schema.Type switch
 		{
-			"string" when schema is { Format: "uuid" }   => "Guid",
-			"string"                                     => "string",
-			"integer" when schema is { Format: "int64" } => "long",
-			"integer"                                    => "int",
-			"array"                                      => $"{schema.Items.ToCsType()}[]",
-			_                                            => "object"
+			"string" when schema is { Format: "uuid" }     => "Guid",
+			"string"                                       => "string",
+			"integer" when schema is { Format: "int64" }   => "long",
+			"integer"                                      => "int",
+			"array"                                        => $"{schema.Items.ToCsType()}[]",
+			"object" when schema.Reference is {} reference => reference.Id,
+			_                                              => "object"
 		};
 		char? nullable = schema.Nullable || forceNullable ? '?' : null;
 		return $"{baseType}{nullable}";
