@@ -16,10 +16,11 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 	private static readonly IDictionary<OperationType, string> HttpMethodMapping =
 		new Dictionary<OperationType, string>
 		{
-			{ OperationType.Head, "HttpMethod.Head" },
-			{ OperationType.Get , "HttpMethod.Get"  },
-			{ OperationType.Post, "HttpMethod.Post" },
-			{ OperationType.Put , "HttpMethod.Put"  }
+			{ OperationType.Head  , "HttpMethod.Head"   },
+			{ OperationType.Get   , "HttpMethod.Get"    },
+			{ OperationType.Post  , "HttpMethod.Post"   },
+			{ OperationType.Put   , "HttpMethod.Put"    },
+			{ OperationType.Delete, "HttpMethod.Delete" }
 		};
 	
 	public void Initialize(IncrementalGeneratorInitializationContext context)
