@@ -20,6 +20,8 @@
         <Authors>Y56380X</Authors>
         <RepositoryUrl>https://github.com/Y56380X/RESTly</RepositoryUrl>
         <RepositoryType>GitHub</RepositoryType>
+        
+        <RootNamespace>Restly</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
