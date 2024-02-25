@@ -11,8 +11,9 @@ internal static class OpenApiExtensions
 	{
 		var baseType = schema.Type switch
 		{
-			"array" => $"{schema.Items.ToCsType()}[]",
-			_       => "object"
+			"string" => "string",
+			"array"  => $"{schema.Items.ToCsType()}[]",
+			_        => "object"
 		};
 		char? nullable = schema.Nullable || forceNullable ? '?' : null;
 		return $"{baseType}{nullable}";
