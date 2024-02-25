@@ -59,7 +59,11 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 	{
 		// Generate request and response models code
 		var modelsCode = apiSpecification.Components.Schemas
-			.Select(kvp => GenerateModelCode(kvp.Key, kvp.Value));
+			.Select(schema => GenerateModelCode(schema.Key, schema.Value));
+
+		// Generate REST call methods for API client
+		var callsCode = apiSpecification.Paths
+			.Select(path => GenerateEndpointCode(path.Key, path.Value));
 		
 		var clientCode =
 			$$"""
@@ -77,6 +81,8 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			  {{"\t\t"}}_httpClient = httpClient;
 			  {{"\t"}}}
 			  
+			  {{"\t"}}{{string.Join("\n\n\t", callsCode)}}
+			  
 			  {{"\t"}}public void Dispose()
 			  {{"\t"}}{
 			  {{"\t\t"}}_httpClient.Dispose();
@@ -85,8 +91,6 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			  {{"\t"}}{{string.Join("\n\n\t", modelsCode)}}
 			  }
 			  """;
-		
-		throw new NotImplementedException();
 
 		return clientCode;
 	}
@@ -99,5 +103,10 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 
 		string PropertyCode(KeyValuePair<string, OpenApiSchema> property) =>
 			$"{property.Value.ToCsType()} {property.Key.Capitalize()}";
+	}
+
+	private static string GenerateEndpointCode(string pathName, OpenApiPathItem call)
+	{
+		throw new NotImplementedException();
 	}
 }
