@@ -72,7 +72,7 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			  {
 			  {{"\t"}}private readonly HttpClient _httpClient;
 			  
-			  {{"\t"}}public ApiClient(HttpClient httpClient)
+			  {{"\t"}}public {{apiSpecification.Info.Title}}(HttpClient httpClient)
 			  {{"\t"}}{
 			  {{"\t\t"}}_httpClient = httpClient;
 			  {{"\t"}}}
