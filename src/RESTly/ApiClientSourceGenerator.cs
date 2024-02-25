@@ -82,6 +82,7 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			  using System.Net.Http;
 			  using System.Net.Http.Json;
 			  using System.Text.Json;
+			  using System.Linq;
 			  
 			  #nullable enable
 			  
@@ -145,12 +146,12 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			.SelectMany(r => r.Value.Content.Select(c => c.Value))
 			.FirstOrDefault();
 		
-		var callsCode = GenerateCallCode(pathTemplate, operationType, operation.Parameters, request, response);
+		var callsCode = GenerateCallCode(pathTemplate, operationType, operation.Parameters.ToArray(), request, response);
 		return callsCode;
 	}
 
 	private static string GenerateCallCode(string pathTemplate, OperationType operationType, 
-		IEnumerable<OpenApiParameter> parameters, 
+		OpenApiParameter[] parameters, 
 		OpenApiMediaType? request, OpenApiMediaType? response)
 	{
 		var methodName = GenerateMethodName();
@@ -161,9 +162,10 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			? $"Response<{response.Schema.ToCsType(forceNullable: true)}>"
 			: "Response";
 		var httpMethod = HttpMethodMapping[operationType];
+		var preparedPathTemplate = GeneratePreparedPathTemplate();
 
 		var callCodeBuilder = new StringBuilder();
-		callCodeBuilder.AppendLine($"""using var request = new HttpRequestMessage({httpMethod}, $"{pathTemplate}");""");
+		callCodeBuilder.AppendLine($"""using var request = new HttpRequestMessage({httpMethod}, $"{preparedPathTemplate}");""");
 		if (request is { Schema: not null })
 		{
 			methodArguments.Insert(0, $"{request.Schema.ToCsType()} body");
@@ -207,5 +209,19 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 
 		string GenerateMethodArgumentCode(OpenApiParameter parameter) => 
 			$"{parameter.Schema.ToCsType()} {parameter.Name}";
+
+		string GeneratePreparedPathTemplate()
+		{
+			var queryParameters = parameters
+				.Where(p => p.In == ParameterLocation.Query)
+				.Select(p => p.Schema?.Type == "array"
+					? $"{{string.Join(\"&\", {p.Name}.Select(x => $\"{p.Name}={{x}}\"))}}"
+					: $"{p.Name}={{{p.Name}}}")
+				.ToArray();
+			var path = queryParameters.Any() ? 
+				$"{pathTemplate}?{string.Join("&", queryParameters)}"
+				: pathTemplate;
+			return path;
+		}
 	}
 }
