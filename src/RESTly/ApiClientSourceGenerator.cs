@@ -13,6 +13,12 @@ namespace Restly;
 [Generator]
 public class ApiClientSourceGenerator : IIncrementalGenerator
 {
+	private static readonly IDictionary<OperationType, string> HttpMethodMapping =
+		new Dictionary<OperationType, string>
+		{
+			{ OperationType.Head, "HttpMethod.Head" }
+		};
+	
 	public void Initialize(IncrementalGeneratorInitializationContext context)
 	{
 		// collect RESTly client attributes and possible files for OpenApi specifications
@@ -105,8 +111,46 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			$"{property.Value.ToCsType()} {property.Key.Capitalize()}";
 	}
 
-	private static string GenerateEndpointCode(string pathName, OpenApiPathItem call)
+	private static string GenerateEndpointCode(string pathTemplate, OpenApiPathItem pathItem)
 	{
+		var callsCode = pathItem.Operations
+			.Select(kvp => GenerateOperationCode(pathTemplate, kvp.Key, kvp.Value))
+			.Where(c => c is not null); // filter not generated code for not supported operations
+		return string.Join("\n\n\t", callsCode);
+	}
+
+	private static string? GenerateOperationCode(string pathTemplate, OperationType operationType, OpenApiOperation operation)
+	{
+		// Check for operation type support
+		if (!HttpMethodMapping.ContainsKey(operationType))
+			return null;
+
+		var callsCode = GenerateCallCode(pathTemplate, operationType);
+		return callsCode;
+	}
+
+	private static string GenerateCallCode(string pathTemplate, OperationType operationType)
+	{
+		var methodName = GenerateMethodName();
+		
+		var callCode = 
+			$$"""
+			  public async Task {{methodName}}()
+			  {
+			  {{"\t\t"}}throw new System.NotImplementedException();
+			  }
+			  """;
+
 		throw new NotImplementedException();
+		
+		return callCode;
+		
+		string GenerateMethodName()
+		{
+			var methodFragments = pathTemplate
+				.Split([' ', '/', '\\', '-', '_', '.', ':', '{', '}', '(', ')', '[', ']'], StringSplitOptions.RemoveEmptyEntries)
+				.Select(f => f.Capitalize());
+			return $"{operationType}{string.Concat(methodFragments)}Async"; // todo: generate better methods names (take response and parameters into account)
+		}
 	}
 }
