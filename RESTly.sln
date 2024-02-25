@@ -1,10 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTly", "src\RESTly\RESTly.csproj", "{BB4C3CDA-86D0-4E7B-BACD-CED3D6C4B796}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB4C3CDA-86D0-4E7B-BACD-CED3D6C4B796}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB4C3CDA-86D0-4E7B-BACD-CED3D6C4B796}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB4C3CDA-86D0-4E7B-BACD-CED3D6C4B796}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB4C3CDA-86D0-4E7B-BACD-CED3D6C4B796}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
