@@ -158,7 +158,7 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			.Select(GenerateMethodArgumentCode)
 			.ToList();
 		var responseType = response is { Schema: not null}
-			? $"Response<{response.Schema.ToCsType()}>"
+			? $"Response<{response.Schema.ToCsType(forceNullable: true)}>"
 			: "Response";
 		var httpMethod = HttpMethodMapping[operationType];
 
