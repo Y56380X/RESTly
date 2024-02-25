@@ -55,6 +55,20 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 
 	private static string GenerateApiClientCode(OpenApiDocument apiSpecification)
 	{
+		// Generate request and response models code
+		var modelsCode = apiSpecification.Components.Schemas
+			.Select(kvp => GenerateModelCode(kvp.Key, kvp.Value));
+		
 		throw new NotImplementedException();
+	}
+
+	private static string GenerateModelCode(string modelName, OpenApiSchema schema)
+	{
+		var modelProperties = schema.Properties
+			.Select(PropertyCode);
+		return $"public record {modelName.Capitalize()}({string.Join(", ", modelProperties)});";
+
+		string PropertyCode(KeyValuePair<string, OpenApiSchema> property) =>
+			$"{property.Value.ToCsType()} {property.Key.Capitalize()}";
 	}
 }
