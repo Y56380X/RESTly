@@ -11,6 +11,7 @@ internal static class OpenApiExtensions
 	{
 		var baseType = schema.Type switch
 		{
+			"string" when schema is { Format: "uuid" } => "Guid",
 			"string" => "string",
 			"array"  => $"{schema.Items.ToCsType()}[]",
 			_        => "object"
