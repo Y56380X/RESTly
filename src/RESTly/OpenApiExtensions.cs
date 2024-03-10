@@ -18,6 +18,8 @@ internal static class OpenApiExtensions
 			"integer"                                      => "int",
 			"array"                                        => $"{schema.Items.ToCsType()}[]",
 			"object" when schema.Reference is {} reference => reference.Id,
+			"object" when schema.AdditionalProperties 
+					 is {} propertiesSchema                => $"IDictionary<string, {propertiesSchema.ToCsType()}>",
 			_                                              => "object"
 		};
 		char? nullable = schema.Nullable || forceNullable ? '?' : null;
