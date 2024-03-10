@@ -11,6 +11,7 @@ internal static class OpenApiExtensions
 	{
 		var baseType = schema.Type switch
 		{
+			"string" when schema is { Format: "byte" }     => "byte[]",
 			"string" when schema is { Format: "uuid" }     => "Guid",
 			"string"                                       => "string",
 			"integer" when schema is { Format: "int64" }   => "long",
