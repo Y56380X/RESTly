@@ -1,0 +1,68 @@
+openapi: 3.0.1
+info:
+  title: RESTly.Samples.SimpleApi
+  version: '1.0'
+paths:
+  /weatherforecast:
+    get:
+      tags:
+        - RESTly.Samples.SimpleApi
+      operationId: GetWeatherForecast
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherForecast'
+  /file-upload:
+    post:
+      tags:
+        - RESTly.Samples.SimpleApi
+      operationId: FileUpload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              format: byte
+        required: true
+      responses:
+        '200':
+          description: OK
+  /dictionary:
+    get:
+      tags:
+        - RESTly.Samples.SimpleApi
+      operationId: GetDictionary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+                  format: int32
+components:
+  schemas:
+    WeatherForecast:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        temperatureC:
+          type: integer
+          format: int32
+        summary:
+          type: string
+          nullable: true
+        temperatureF:
+          type: integer
+          format: int32
+          readOnly: true
+      additionalProperties: false

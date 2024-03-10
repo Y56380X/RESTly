@@ -8,6 +8,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "[Documentation]", "[Documen
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTly.Samples.SimpleApi", "samples\simple\RESTly.Samples.SimpleApi\RESTly.Samples.SimpleApi.csproj", "{142568B1-0A14-4591-B60A-3CA240863E2E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{4FB632B4-8E79-4BCF-9C60-9EA05001804C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTly.Samples.SimpleConsumer", "samples\simple\RESTly.Samples.SimpleConsumer\RESTly.Samples.SimpleConsumer.csproj", "{0D0F28FC-83CA-479A-A58A-01B6A55E37EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +24,17 @@ Global
 		{BB4C3CDA-86D0-4E7B-BACD-CED3D6C4B796}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB4C3CDA-86D0-4E7B-BACD-CED3D6C4B796}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB4C3CDA-86D0-4E7B-BACD-CED3D6C4B796}.Release|Any CPU.Build.0 = Release|Any CPU
+		{142568B1-0A14-4591-B60A-3CA240863E2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{142568B1-0A14-4591-B60A-3CA240863E2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{142568B1-0A14-4591-B60A-3CA240863E2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{142568B1-0A14-4591-B60A-3CA240863E2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D0F28FC-83CA-479A-A58A-01B6A55E37EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D0F28FC-83CA-479A-A58A-01B6A55E37EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D0F28FC-83CA-479A-A58A-01B6A55E37EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D0F28FC-83CA-479A-A58A-01B6A55E37EC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{142568B1-0A14-4591-B60A-3CA240863E2E} = {4FB632B4-8E79-4BCF-9C60-9EA05001804C}
+		{0D0F28FC-83CA-479A-A58A-01B6A55E37EC} = {4FB632B4-8E79-4BCF-9C60-9EA05001804C}
 	EndGlobalSection
 EndGlobal
