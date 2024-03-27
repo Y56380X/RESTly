@@ -9,6 +9,7 @@
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsRoslynComponent>true</IsRoslynComponent>
         <IncludeBuildOutput>false</IncludeBuildOutput>
+        <Deterministic>true</Deterministic>
 
         <PackageId>RESTly</PackageId>
         <Version>0.3</Version>
