@@ -11,7 +11,7 @@
         <IncludeBuildOutput>false</IncludeBuildOutput>
 
         <PackageId>RESTly</PackageId>
-        <Version>0.2</Version>
+        <Version>0.3</Version>
         <Title>RESTly</Title>
         <Description>A (experimental, WIP) C# source generator for generating REST clients out of OpenApi specifications.</Description>
         <Copyright>Copyright (c) 2024 Y56380X</Copyright>
