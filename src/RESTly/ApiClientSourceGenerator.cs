@@ -89,7 +89,7 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			  
 			  namespace Restly;
 			  
-			  public class {{apiSpecification.Info.Title}} : IDisposable
+			  public partial class {{apiSpecification.Info.Title}} : IDisposable
 			  {
 			  {{"\t"}}private readonly HttpClient _httpClient;
 			  {{"\t"}}private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
