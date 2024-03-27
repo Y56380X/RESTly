@@ -6,7 +6,7 @@ using Microsoft.OpenApi.Models;
 
 namespace Restly.CodeResolvers;
 
-public class ClientCodeResolver
+internal sealed class ClientCodeResolver : CodeResolverBase
 {
 	private static readonly IDictionary<OperationType, string> HttpMethodMapping =
 		new Dictionary<OperationType, string>
@@ -19,15 +19,12 @@ public class ClientCodeResolver
 		};
 	private readonly OpenApiDocument _apiSpecification;
 	
-	private string? _generatedCode;
-	public string GeneratedCode => _generatedCode ??= Resolve();
-	
 	public ClientCodeResolver(OpenApiDocument apiSpecification)
 	{
 		_apiSpecification = apiSpecification;
 	}
 
-	private string Resolve()
+	protected override string Resolve()
 	{
 		// Generate request and response models code
 		var modelsCode = _apiSpecification.Components.Schemas
@@ -77,16 +74,6 @@ public class ClientCodeResolver
 			  """;
 
 		return clientCode;
-	}
-	
-	private static string GenerateModelCode(string modelName, OpenApiSchema schema)
-	{
-		var modelProperties = schema.Properties
-			.Select(PropertyCode);
-		return $"{"\t"}public record {modelName.Capitalize()}({string.Join(", ", modelProperties)});";
-
-		string PropertyCode(KeyValuePair<string, OpenApiSchema> property) =>
-			$"{property.Value.ToCsType()} {property.Key.Capitalize()}";
 	}
 
 	private static string GenerateEndpointCode(string pathTemplate, OpenApiPathItem pathItem)

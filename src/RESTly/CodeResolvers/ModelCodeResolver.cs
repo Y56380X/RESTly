@@ -5,13 +5,10 @@ using Microsoft.OpenApi.Models;
 
 namespace Restly.CodeResolvers;
 
-public class ModelCodeResolver
+internal sealed class ModelCodeResolver : CodeResolverBase
 {
 	private readonly string _name;
 	private readonly OpenApiSchema _schema;
-	
-	private string? _generatedCode;
-	public string GeneratedCode => _generatedCode ??= Resolve();
 
 	public ModelCodeResolver(string name, OpenApiSchema schema)
 	{
@@ -19,7 +16,7 @@ public class ModelCodeResolver
 		_schema = schema;
 	}
 	
-	private string Resolve()
+	protected override string Resolve()
 	{
 		var modelProperties = _schema.Properties
 			.Select(PropertyCode);
