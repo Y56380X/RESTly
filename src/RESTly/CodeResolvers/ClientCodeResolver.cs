@@ -31,7 +31,8 @@ public class ClientCodeResolver
 	{
 		// Generate request and response models code
 		var modelsCode = _apiSpecification.Components.Schemas
-			.Select(schema => GenerateModelCode(schema.Key, schema.Value));
+			.Select(schema => new ModelCodeResolver(schema.Key, schema.Value))
+			.Select(mcr => mcr.GeneratedCode);
 
 		// Generate REST call methods for API client
 		var callsCode = _apiSpecification.Paths
