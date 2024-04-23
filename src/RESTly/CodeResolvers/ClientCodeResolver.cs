@@ -54,16 +54,23 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 			  public partial class {{_apiSpecification.Info.Title}} : IDisposable
 			  {
 			  {{"\t"}}private readonly HttpClient _httpClient;
-			  {{"\t"}}private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
-			  {{"\t"}}{
-			  {{"\t\t"}}PropertyNameCaseInsensitive = true
-			  {{"\t"}}};
+			  {{"\t"}}private readonly JsonSerializerOptions _jsonOptions;
 
 			  {{"\t"}}public {{_apiSpecification.Info.Title}}(HttpClient httpClient)
 			  {{"\t"}}{
-			  {{"\t\t"}}_httpClient = httpClient;
+			  {{"\t\t"}}_httpClient  = httpClient;
+			  {{"\t\t"}}_jsonOptions = new JsonSerializerOptions
+			  {{"\t\t"}}{
+			  {{"\t\t\t"}}PropertyNameCaseInsensitive = true
+			  {{"\t\t"}}};
 			  {{"\t"}}}
 
+			  {{"\t"}}public {{_apiSpecification.Info.Title}}(HttpClient httpClient, JsonSerializerOptions jsonOptions)
+			  {{"\t"}}{
+			  {{"\t\t"}}_httpClient  = httpClient;
+			  {{"\t\t"}}_jsonOptions = jsonOptions;
+			  {{"\t"}}}
+			  
 			  {{string.Join("\n\n", callsCode)}}
 
 			  {{"\t"}}public void Dispose()
