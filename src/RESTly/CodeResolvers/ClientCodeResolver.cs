@@ -106,12 +106,13 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 			.SelectMany(r => r.Value.Content.Select(c => c.Value))
 			.FirstOrDefault();
 		
-		var callsCode = GenerateCallCode(pathTemplate, operationType, operation.Parameters.ToArray(), request, response);
+		var callsCode = GenerateCallCode(
+			pathTemplate, operationType, operation.Parameters.ToArray(), operation.OperationId, request, response);
 		return callsCode;
 	}
 
 	private static string GenerateCallCode(string pathTemplate, OperationType operationType, 
-		OpenApiParameter[] parameters, 
+		OpenApiParameter[] parameters, string? operationId,
 		OpenApiMediaType? request, OpenApiMediaType? response)
 	{
 		var methodName = GenerateMethodName();
@@ -161,9 +162,13 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 		
 		string GenerateMethodName()
 		{
+			if (operationId != null && !string.IsNullOrWhiteSpace(operationId))
+				return operationId.EndsWith("Async") ? operationId : $"{operationId}Async";
+			
 			var methodFragments = pathTemplate
 				.Split([' ', '/', '\\', '-', '_', '.', ':', '{', '}', '(', ')', '[', ']'], StringSplitOptions.RemoveEmptyEntries)
 				.Select(f => f.Capitalize());
+			
 			return $"{operationType}{string.Concat(methodFragments)}Async"; // todo: generate better methods names (take response and parameters into account)
 		}
 

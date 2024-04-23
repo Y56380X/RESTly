@@ -10,9 +10,9 @@ var dictionaryResult = await simpleApi.GetDictionaryAsync();
 Console.WriteLine(dictionaryResult);
 Console.WriteLine(dictionaryResult.Model?.FirstOrDefault());
 
-var fileUploadResult = await simpleApi.PostFileUploadAsync([12, 12, 12]);
+var fileUploadResult = await simpleApi.FileUploadAsync([12, 12, 12]);
 Console.WriteLine(fileUploadResult);
 
-var weatherResult = await simpleApi.GetWeatherforecastAsync();
+var weatherResult = await simpleApi.GetWeatherForecastAsync();
 Console.WriteLine(weatherResult);
 Console.WriteLine(weatherResult.Model?.FirstOrDefault());
