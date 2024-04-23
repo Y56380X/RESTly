@@ -124,12 +124,12 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 			methodArguments.Insert(0, $"{request.Schema.ToCsType()} body");
 			callCodeBuilder.AppendLine($"{"\t\t"}request.Content = JsonContent.Create(body);");
 		}
-		callCodeBuilder.AppendLine($"{"\t\t"}using var response = await _httpClient.SendAsync(request);");
+		callCodeBuilder.AppendLine($"{"\t\t"}using var response = await _httpClient.SendAsync(request, cancellationToken);");
 		if (response is { Schema: not null })
 		{
 			callCodeBuilder.AppendLine($"{"\t\t"}{response.Schema.ToCsType(forceNullable: true)} model;");
 			callCodeBuilder.AppendLine($"{"\t\t"}if (response.IsSuccessStatusCode)");
-			callCodeBuilder.AppendLine($"{"\t\t\t"}model = JsonSerializer.Deserialize<{response.Schema.ToCsType()}>(await response.Content.ReadAsStreamAsync(), _jsonOptions);");
+			callCodeBuilder.AppendLine($"{"\t\t\t"}model = JsonSerializer.Deserialize<{response.Schema.ToCsType()}>(await response.Content.ReadAsStreamAsync(cancellationToken), _jsonOptions);");
 			callCodeBuilder.AppendLine($"{"\t\t"}else");
 			callCodeBuilder.AppendLine($"{"\t\t\t"}model = default;");
 		}
@@ -143,7 +143,7 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 		
 		var callCode = 
 			$$"""
-			  {{"\t"}}public async Task<{{responseType}}> {{methodName}}({{string.Join(", ", methodArguments)}})
+			  {{"\t"}}public async Task<{{responseType}}> {{methodName}}({{string.Join(", ", methodArguments.Append("CancellationToken cancellationToken = default"))}})
 			  {{"\t"}}{
 			  {{"\t\t"}}{{callCodeBuilder}}
 			  {{"\t\t"}}return new {{responseType}}({{string.Join(", ", responseArguments)}});
