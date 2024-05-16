@@ -20,7 +20,7 @@ internal sealed class ModelCodeResolver : CodeResolverBase
 	{
 		var modelProperties = _schema.Properties
 			.Select(PropertyCode);
-		return $"{"\t"}public record {_name.Capitalize()}({string.Join(", ", modelProperties)});";
+		return $"{"\t"}public record {_name.NormalizeTypeName()}({string.Join(", ", modelProperties)});";
 
 		string PropertyCode(KeyValuePair<string, OpenApiSchema> property) =>
 			$"{property.Value.ToCsType()} {property.Key.Capitalize()}";

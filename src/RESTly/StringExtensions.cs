@@ -8,4 +8,7 @@ internal static class StringExtensions
 	public static string Capitalize(this string s) => s.Length > 0 
 		? $"{char.ToUpper(s[0])}{s.Substring(1)}"
 		: s;
+	
+	public static string NormalizeTypeName(this string typeName) => string.Concat(
+		typeName.Split(['-', '_', '.']).Select(Capitalize));
 }
