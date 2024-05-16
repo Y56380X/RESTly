@@ -9,6 +9,6 @@ internal static class StringExtensions
 		? $"{char.ToUpper(s[0])}{s.Substring(1)}"
 		: s;
 	
-	public static string NormalizeTypeName(this string typeName) => string.Concat(
+	public static string NormalizeCsName(this string typeName) => string.Concat(
 		typeName.Split(['-', '_', '.']).Select(Capitalize));
 }

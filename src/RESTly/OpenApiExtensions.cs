@@ -18,7 +18,7 @@ internal static class OpenApiExtensions
 			"integer" when schema is { Format: "int64" }    => "long",
 			"integer"                                       => "int",
 			"array"                                         => $"{schema.Items.ToCsType()}[]",
-			"object" when schema.Reference is {} reference  => reference.Id.NormalizeTypeName(),
+			"object" when schema.Reference is {} reference  => reference.Id.NormalizeCsName(),
 			"object" when schema.AdditionalProperties 
 					 is {} propertiesSchema                 => $"IDictionary<string, {propertiesSchema.ToCsType()}>",
 			_                                               => "object"
