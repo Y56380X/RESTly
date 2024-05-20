@@ -1,6 +1,10 @@
 // Copyright Y56380X https://github.com/Y56380X/RESTly.
 // Licensed under the MIT License.
 
+using System.Runtime.CompilerServices;
+
+[assembly:InternalsVisibleTo("Restly.Samples.CodeGenerator")]
+
 namespace Restly.CodeResolvers;
 
 internal abstract class CodeResolverBase
