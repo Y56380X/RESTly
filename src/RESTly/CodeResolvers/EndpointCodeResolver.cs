@@ -127,9 +127,10 @@ internal class EndpointCodeResolver : CodeResolverBase
 					? $"{{string.Join(\"&\", {p.Name}.Select(x => $\"{p.Name}={{x}}\"))}}"
 					: $"{p.Name}={{{p.Name}}}")
 				.ToArray();
+			var baseUrl = pathTemplate.TrimStart(['/', '\\']);
 			var path = queryParameters.Any() ? 
-				$"{pathTemplate}?{string.Join("&", queryParameters)}"
-				: pathTemplate;
+				$"{baseUrl}?{string.Join("&", queryParameters)}"
+				: baseUrl;
 			return path;
 		}
 	}
