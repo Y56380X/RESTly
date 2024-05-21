@@ -16,4 +16,11 @@
       <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.14" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="..\simple\doc\simple-api.yaml">
+        <Link>simple-api.yaml</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>
