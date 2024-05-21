@@ -124,8 +124,8 @@ internal class EndpointCodeResolver : CodeResolverBase
 			var queryParameters = parameters
 				.Where(p => p.In == ParameterLocation.Query)
 				.Select(p => p.Schema?.Type == "array"
-					? $"{{string.Join(\"&\", {p.Name}.Select(x => $\"{p.Name}={{x}}\"))}}"
-					: $"{p.Name}={{{p.Name}}}")
+					? $"{{string.Join(\"&\", {p.Name}.Select(x => $\"{p.Name}={{HttpUtility.UrlEncode(x)}}\"))}}"
+					: $"{p.Name}={{HttpUtility.UrlEncode({p.Name})}}")
 				.ToArray();
 			var baseUrl = pathTemplate.TrimStart(['/', '\\']);
 			var path = queryParameters.Any() ? 
