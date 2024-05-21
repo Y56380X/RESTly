@@ -16,3 +16,7 @@ Console.WriteLine(fileUploadResult);
 var weatherResult = await simpleApi.GetWeatherForecastAsync();
 Console.WriteLine(weatherResult);
 Console.WriteLine(weatherResult.Model?.FirstOrDefault());
+
+var citiesResult = await simpleApi.QueryCitiesAsync("b");
+Console.WriteLine(citiesResult);
+Console.WriteLine($"Cities: {string.Join(", ", citiesResult.Model ?? ArraySegment<string?>.Empty)}");

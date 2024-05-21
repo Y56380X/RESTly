@@ -47,6 +47,26 @@ paths:
                 additionalProperties:
                   type: integer
                   format: int32
+  /cities:
+    get:
+      tags:
+        - RESTly.Samples.SimpleApi
+      operationId: QueryCities
+      parameters:
+        - name: q
+          in: query
+          style: form
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
 components:
   schemas:
     WeatherForecast:

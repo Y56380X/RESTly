@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -49,6 +51,24 @@ app.MapGet("/dictionary", () => new Dictionary<string, int>
 		{"Friday", 10}
 	})
 	.WithName("GetDictionary")
+	.WithOpenApi();
+
+app.MapGet("/cities", ([FromQuery(Name = "q")] string? query) =>
+	{
+		string[] cities =
+		[
+			"Rome",
+			"Milan",
+			"Berlin",
+			"Barcelona",
+			"Turin",
+			"Praha"
+		];
+		return !string.IsNullOrWhiteSpace(query)
+			? cities.Where(c => c.StartsWith(query, StringComparison.InvariantCultureIgnoreCase))
+			: cities ;
+	})
+	.WithName("QueryCities")
 	.WithOpenApi();
 
 app.Run();
