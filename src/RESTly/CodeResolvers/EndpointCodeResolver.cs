@@ -124,14 +124,21 @@ internal class EndpointCodeResolver : CodeResolverBase
 			var queryParameters = parameters
 				.Where(p => p.In == ParameterLocation.Query)
 				.Select(p => p.Schema?.Type == "array"
-					? $"{{string.Join(\"&\", {p.Name}.Select(x => $\"{p.Name}={{HttpUtility.UrlEncode(x)}}\"))}}"
-					: $"{p.Name}={{HttpUtility.UrlEncode({p.Name})}}")
+					? $"{{string.Join(\"&\", {p.Name}.Select(x => $\"{GenerateParameterAssignment(p, "x")}\"))}}"
+					: GenerateParameterAssignment(p, p.Name))
 				.ToArray();
 			var baseUrl = pathTemplate.TrimStart(['/', '\\']);
 			var path = queryParameters.Any() ? 
 				$"{baseUrl}?{string.Join("&", queryParameters)}"
 				: baseUrl;
 			return path;
+
+			string GenerateParameterAssignment(OpenApiParameter parameter, string memberName) =>
+				parameter.Schema?.Type switch
+				{
+					"string" => $"{parameter.Name}={{HttpUtility.UrlEncode({memberName})}}",
+					_        => $"{parameter.Name}={{{memberName}}}"
+				};
 		}
 	}
 }
