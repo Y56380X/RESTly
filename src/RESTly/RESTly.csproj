@@ -33,9 +33,9 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0"/>
 
-        <PackageReference Include="Microsoft.OpenApi" Version="1.6.13" PrivateAssets="all" GeneratePathProperty="true" />
-        <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.13" PrivateAssets="all" GeneratePathProperty="true" />
-        <PackageReference Include="SharpYaml" Version="2.1.0" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="Microsoft.OpenApi" Version="1.6.14" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.14" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="SharpYaml" Version="2.1.1" PrivateAssets="all" GeneratePathProperty="true" />
     </ItemGroup>
 
     <ItemGroup>
