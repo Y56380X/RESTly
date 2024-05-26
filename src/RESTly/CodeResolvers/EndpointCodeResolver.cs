@@ -106,7 +106,10 @@ internal class EndpointCodeResolver : CodeResolverBase
 		{
 			// use `operationId` as first priority
 			if (operationId != null && !string.IsNullOrWhiteSpace(operationId))
-				return operationId.EndsWith("Async") ? operationId : $"{operationId}Async";
+			{
+				var operationMethodName = operationId.EndsWith("Async") ? operationId : $"{operationId}Async";
+				return operationMethodName.NormalizeCsName();
+			}
 			
 			// build method name based on path template
 			var methodFragments = pathTemplate
