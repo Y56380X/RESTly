@@ -20,3 +20,7 @@ Console.WriteLine(weatherResult.Model?.FirstOrDefault());
 var citiesResult = await simpleApi.QueryCitiesAsync("b");
 Console.WriteLine(citiesResult);
 Console.WriteLine($"Cities: {string.Join(", ", citiesResult.Model ?? ArraySegment<string?>.Empty)}");
+
+var thingsResult = await simpleApi.QueryThingsByIndexAsync([1, 4]);
+Console.WriteLine(thingsResult);
+Console.WriteLine($"Things: {string.Join(", ", thingsResult.Model ?? ArraySegment<string?>.Empty)}");

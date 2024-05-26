@@ -53,7 +53,7 @@ app.MapGet("/dictionary", () => new Dictionary<string, int>
 	.WithName("GetDictionary")
 	.WithOpenApi();
 
-app.MapGet("/cities", ([FromQuery(Name = "q")] string? query) =>
+app.MapGet("/cities", ([FromQuery(Name = "q")]string? query) =>
 	{
 		string[] cities =
 		[
@@ -69,6 +69,22 @@ app.MapGet("/cities", ([FromQuery(Name = "q")] string? query) =>
 			: cities ;
 	})
 	.WithName("QueryCities")
+	.WithOpenApi();
+
+app.MapGet("/things", ([FromQuery(Name = "q")]int[] query) =>
+	{
+		string[] things =
+		[
+			"Apple",
+			"Shelf",
+			"Car",
+			"Train",
+			"Table",
+			"Door"
+		];
+		return query.Select(i => things[i]);
+	})
+	.WithName("QueryThingsByIndex")
 	.WithOpenApi();
 
 app.Run();
