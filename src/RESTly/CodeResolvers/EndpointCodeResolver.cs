@@ -72,7 +72,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		if (request is { Schema: not null })
 		{
 			methodArguments.Insert(0, $"{request.Schema.ToCsType()} body");
-			callCodeBuilder.AppendLine($"{"\t\t"}request.Content = JsonContent.Create(body);");
+			callCodeBuilder.AppendLine($"{"\t\t"}request.Content = JsonContent.Create(body, options: _jsonOptions);");
 		}
 		callCodeBuilder.AppendLine($"{"\t\t"}using var response = await _httpClient.SendAsync(request, cancellationToken);");
 		if (response is { Schema: not null })
