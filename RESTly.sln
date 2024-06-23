@@ -16,6 +16,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTly.Samples.SimpleConsum
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTly.Samples.CodeGenerator", "samples\RESTly.Samples.CodeGenerator\RESTly.Samples.CodeGenerator.csproj", "{D4D3E97A-ECA0-4E9C-98A6-9B7FD4875FC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTly.Samples.NativeAotConsumer", "samples\RESTly.Samples.NativeAotConsumer\RESTly.Samples.NativeAotConsumer.csproj", "{93574ABE-93B3-411D-9391-1C9FEBA48DC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTly.Samples.ClientLibrary", "samples\RESTly.Samples.ClientLibrary\RESTly.Samples.ClientLibrary.csproj", "{9EF1462B-BC25-4497-9FEF-A09F90DE505F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,10 +42,20 @@ Global
 		{D4D3E97A-ECA0-4E9C-98A6-9B7FD4875FC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4D3E97A-ECA0-4E9C-98A6-9B7FD4875FC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4D3E97A-ECA0-4E9C-98A6-9B7FD4875FC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93574ABE-93B3-411D-9391-1C9FEBA48DC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93574ABE-93B3-411D-9391-1C9FEBA48DC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93574ABE-93B3-411D-9391-1C9FEBA48DC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93574ABE-93B3-411D-9391-1C9FEBA48DC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EF1462B-BC25-4497-9FEF-A09F90DE505F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EF1462B-BC25-4497-9FEF-A09F90DE505F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EF1462B-BC25-4497-9FEF-A09F90DE505F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EF1462B-BC25-4497-9FEF-A09F90DE505F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{142568B1-0A14-4591-B60A-3CA240863E2E} = {4FB632B4-8E79-4BCF-9C60-9EA05001804C}
 		{0D0F28FC-83CA-479A-A58A-01B6A55E37EC} = {4FB632B4-8E79-4BCF-9C60-9EA05001804C}
 		{D4D3E97A-ECA0-4E9C-98A6-9B7FD4875FC4} = {4FB632B4-8E79-4BCF-9C60-9EA05001804C}
+		{93574ABE-93B3-411D-9391-1C9FEBA48DC4} = {4FB632B4-8E79-4BCF-9C60-9EA05001804C}
+		{9EF1462B-BC25-4497-9FEF-A09F90DE505F} = {4FB632B4-8E79-4BCF-9C60-9EA05001804C}
 	EndGlobalSection
 EndGlobal
