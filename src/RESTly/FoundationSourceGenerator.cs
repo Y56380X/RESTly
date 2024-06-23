@@ -45,7 +45,7 @@ public class FoundationSourceGenerator : IIncrementalGenerator
 		using System.Threading;
 		using System.Threading.Tasks;
 
-		#if NETSTANDARD2_0
+		#if NETSTANDARD2_0 || NETSTANDARD2_1
 		internal static class HttpContentPolyfill
 		{
 			public static Task<Stream> ReadAsStreamAsync(this HttpContent httpContent, CancellationToken _) => 

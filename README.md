@@ -1,7 +1,7 @@
 # RESTly
 
 A (experimental, WIP) C# source generator for generating REST clients out of OpenApi specifications.
-**Currently supports .NET 8 SDK.**
+**Currently, supports .NET 8 SDK.** Generated code can target as low as netstandard2.0, but with additional polyfills needed.
 
 ## Getting Started
 
