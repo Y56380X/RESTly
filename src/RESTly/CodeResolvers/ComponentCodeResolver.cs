@@ -6,18 +6,20 @@ using Microsoft.OpenApi.Models;
 
 namespace Restly.CodeResolvers;
 
-internal sealed class ModelCodeResolver : CodeResolverBase
+internal sealed class ComponentCodeResolver : CodeResolverBase
 {
 	private readonly string _modelTypeName;
 	private readonly OpenApiSchema _schema;
 
-	public ModelCodeResolver(string modelTypeName, OpenApiSchema schema)
+	public ComponentCodeResolver(string modelTypeName, OpenApiSchema schema)
 	{
 		_modelTypeName = modelTypeName.NormalizeCsName();
 		_schema = schema;
 	}
-	
-	protected override string Resolve()
+
+	protected override string Resolve() => ResolveModel();
+
+	private string ResolveModel()
 	{
 		var modelProperties = _schema.Properties.Select(GeneratePropertyCode).ToArray();
 		var propertyPrefix = modelProperties.Length > 1 ? "\n\t\t" : string.Empty;
@@ -30,7 +32,7 @@ internal sealed class ModelCodeResolver : CodeResolverBase
 			var subModelSchema = property.Value.Type == "array"
 				? property.Value.Items
 				: property.Value;
-			var codeResolver = new ModelCodeResolver(subModelName, subModelSchema);
+			var codeResolver = new ComponentCodeResolver(subModelName, subModelSchema);
 			modelCodeBuilder.AppendLine();
 			modelCodeBuilder.AppendLine();
 			modelCodeBuilder.Append(codeResolver.Resolve());
