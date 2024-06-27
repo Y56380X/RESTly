@@ -1,9 +1,10 @@
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Add services to the container
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -87,9 +88,30 @@ app.MapGet("/things", ([FromQuery(Name = "q")]int[] query) =>
 	.WithName("QueryThingsByIndex")
 	.WithOpenApi();
 
+var items = new[]
+{
+	new Item(Guid.NewGuid(), "Item 1", ItemType.TestItem1),
+	new Item(Guid.NewGuid(), "Item 2", ItemType.TestItem2)
+};
+
+app.MapGet("/items", () => items)
+	.WithOpenApi();
+
+app.MapGet("/items/{type}", (ItemType type) => items.Where(i => i.Type == type))
+	.WithOpenApi();
+
 app.Run();
 
 record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
 {
 	public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+}
+
+record Item(Guid Uuid, string Name, ItemType Type);
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+enum ItemType
+{
+	TestItem1,
+	TestItem2
 }

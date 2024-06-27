@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 namespace Restly.CodeResolvers;
@@ -17,7 +18,29 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 		_schema = schema;
 	}
 
-	protected override string Resolve() => ResolveModel();
+	protected override string Resolve()
+	{
+		return _schema.Enum.Any() 
+			? ResolveEnum()
+			: ResolveModel();
+	}
+
+	private string ResolveEnum()
+	{
+		var enumCodeBuilder = new StringBuilder($"{"\t"}public enum {_modelTypeName}\n");
+		enumCodeBuilder.AppendLine($"{"\t"}{{");
+		enumCodeBuilder.AppendLine(string.Join(",\n", _schema.Enum.Select(ResolveEnumValue)));
+		enumCodeBuilder.Append($"{"\t"}}}");
+
+		return enumCodeBuilder.ToString();
+
+		string? ResolveEnumValue(IOpenApiAny enumValue) => enumValue switch
+		{
+			OpenApiInteger oaEnumInteger => $"{"\t\t"}Value{oaEnumInteger.Value} = {oaEnumInteger.Value}",
+			OpenApiString  oaEnumString  => $"{"\t\t"}{oaEnumString.Value.NormalizeCsName()}",
+			_ => null // currently returns null; todo: give diagnostics info
+		};
+	}
 
 	private string ResolveModel()
 	{

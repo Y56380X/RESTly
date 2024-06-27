@@ -11,6 +11,8 @@ internal static class OpenApiExtensions
 	{
 		var baseType = schema.Type switch
 		{
+			"string" when schema.Enum.Any() 
+			              && schema.Reference is not null   => schema.Reference.Id.NormalizeCsName(),
 			"string" when schema is { Format: "byte" }      => "byte[]",
 			"string" when schema is { Format: "uuid" }      => "Guid",
 			"string" when schema is { Format: "date-time" } => "DateTime",
