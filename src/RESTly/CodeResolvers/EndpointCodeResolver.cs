@@ -139,8 +139,9 @@ internal class EndpointCodeResolver : CodeResolverBase
 			string GenerateParameterAssignment(OpenApiParameter parameter, string memberName) =>
 				parameter.Schema?.Type switch
 				{
-					"string" => $"{parameter.Name}={{HttpUtility.UrlEncode({memberName})}}",
-					_        => $"{parameter.Name}={{{memberName}}}"
+					"string" when !parameter.Schema.Enum.Any()
+						=> $"{parameter.Name}={{HttpUtility.UrlEncode({memberName})}}",
+					_   => $"{parameter.Name}={{{memberName}}}"
 				};
 		}
 	}
