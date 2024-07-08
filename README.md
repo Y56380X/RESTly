@@ -17,3 +17,13 @@ For using AOT there is the need to add a client library project additionally to 
 In the application project the JSON serialization context for the generated API models must be defined.
 The split into projects is necessary as RESTly and JSON serialization context need source generators and
 those can not be chained.
+
+## Target older framework versions
+
+Building RESTly client libraries makes a new .NET SDK version necessary.
+Target is to support at least the latest LTS version (but no guarantee).
+
+With RESTly it is possible to build REST clients for older .NET versions 
+netstandard 2.0 and onwards compatible (, see [https://learn.microsoft.com/en-us/dotnet/standard/net-standard](https://learn.microsoft.com/en-us/dotnet/standard/net-standard)).
+When building for older .NET versions, additional dependencies might become necessary.
+This can be seen in the `ClientLibrary` example project.
