@@ -1,8 +1,9 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAntiforgery();
 
 // Add services to the container
 builder.Services.AddEndpointsApiExplorer();
@@ -17,6 +18,7 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI();
 }
 
+app.UseAntiforgery();
 app.UseHttpsRedirection();
 
 var summaries = new[]
@@ -98,6 +100,29 @@ app.MapGet("/items", () => items)
 	.WithOpenApi();
 
 app.MapGet("/items/{type}", (ItemType type) => items.Where(i => i.Type == type))
+	.WithOpenApi();
+
+// Sample for an endpoint with `IFormFile` in combination with `.WithOpenApi()`
+// => the name of the parameter has to be given in the client.
+app.MapPost("/upload-single", (IFormFile file) =>
+	{
+		Console.WriteLine($"Name = {file.Name}, FileName = {file.FileName}, Type = {file.ContentType}, Length = {file.Length}");
+	})
+	.DisableAntiforgery();
+
+app.MapPost("/upload-multiple", (IFormFile file1, IFormFile file2) =>
+	{
+		Console.WriteLine($"Name = {file1.Name}, FileName = {file1.FileName}, Type = {file1.ContentType}, Length = {file1.Length}");
+		Console.WriteLine($"Name = {file2.Name}, FileName = {file2.FileName}, Type = {file2.ContentType}, Length = {file2.Length}");
+	})
+	.DisableAntiforgery();
+
+app.MapPost("/upload-collection", (IFormFileCollection files) =>
+	{
+		foreach (var file in files)
+			Console.WriteLine($"Name = {file.Name}, FileName = {file.FileName}, Type = {file.ContentType}, Length = {file.Length}");
+	})
+	.DisableAntiforgery()
 	.WithOpenApi();
 
 app.Run();

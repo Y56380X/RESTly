@@ -27,3 +27,11 @@ With RESTly it is possible to build REST clients for older .NET versions
 netstandard 2.0 and onwards compatible (, see [https://learn.microsoft.com/en-us/dotnet/standard/net-standard](https://learn.microsoft.com/en-us/dotnet/standard/net-standard)).
 When building for older .NET versions, additional dependencies might become necessary.
 This can be seen in the `ClientLibrary` example project.
+
+## File uploads
+
+There is one possible issue with file upload.
+When using minimal APIs with the `.WithOpenApi()` extension method and
+call parameters of type `IFormFile` the generated schema contains no names
+for the form field names. This makes the automated generation of client code hardly possible.
+For using such endpoints the correct names must be given in the `Name` field of the body parameter.

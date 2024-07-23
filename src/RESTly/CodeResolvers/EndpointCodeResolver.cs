@@ -3,6 +3,7 @@
 
 using System.Text;
 using Microsoft.OpenApi.Models;
+using RequestDefinition = (string ContentType, Microsoft.OpenApi.Models.OpenApiMediaType RequestType);
 
 namespace Restly.CodeResolvers;
 
@@ -41,21 +42,27 @@ internal class EndpointCodeResolver : CodeResolverBase
 		if (!HttpMethodMapping.ContainsKey(operationType))
 			return null;
 
-		var request = operation.RequestBody is { Content: var requestContent } && requestContent.Any()
-			? requestContent.Values.FirstOrDefault()
+		RequestDefinition? request = operation.RequestBody is { Content: var requestContent } && requestContent.Any()
+			? new RequestDefinition(requestContent.FirstOrDefault().Key, requestContent.FirstOrDefault().Value)
 			: null;
 		var response = operation.Responses
 			.SelectMany(r => r.Value.Content.Select(c => c.Value))
 			.FirstOrDefault();
 		
 		var callsCode = GenerateCallCode(
-			pathTemplate, operationType, operation.Parameters.ToArray(), operation.OperationId, request, response);
+			pathTemplate, 
+			operationType, 
+			operation.Parameters.ToArray(), 
+			operation.OperationId, 
+			request, 
+			response);
+		
 		return callsCode;
 	}
 
 	private static string GenerateCallCode(string pathTemplate, OperationType operationType, 
 		OpenApiParameter[] parameters, string? operationId,
-		OpenApiMediaType? request, OpenApiMediaType? response)
+		RequestDefinition? request, OpenApiMediaType? response)
 	{
 		var methodName = GenerateMethodName();
 		var methodArguments = parameters
@@ -69,9 +76,31 @@ internal class EndpointCodeResolver : CodeResolverBase
 
 		var callCodeBuilder = new StringBuilder();
 		callCodeBuilder.AppendLine($"""using var request = new HttpRequestMessage({httpMethod}, $"{preparedPathTemplate}");""");
-		if (request is { Schema: not null })
+		if (IsFormFileUpload(out var multipleFiles, out var formNames))
 		{
-			methodArguments.Insert(0, $"{request.Schema.ToCsType()} body");
+			// todo: better handling of input of multiple file form fields!
+			// => With the array upload-multiple can loose files!
+			methodArguments.Insert(0, $"(Stream Stream, string FileName){(multipleFiles == true ? "[]" : string.Empty)} body");
+			callCodeBuilder.AppendLine($"{"\t\t"}using var multipartContent = new MultipartFormDataContent();");
+			switch (multipleFiles)
+			{
+				case true when (formNames?.Length ?? 0) > 0: // unroll file list from schema
+					for (var fileIndex = 0; fileIndex < formNames.Length; fileIndex++)
+						callCodeBuilder.AppendLine($"{"\t\t"}multipartContent.Add(new StreamContent(body[{fileIndex}].Stream), \"{formNames[fileIndex]}\", body[{fileIndex}].FileName);");
+					break;
+				case true:
+					callCodeBuilder.AppendLine($"{"\t\t"}for (var fileIndex = 0; fileIndex < body.Length; fileIndex++)");
+					callCodeBuilder.AppendLine($"{"\t\t\t"}multipartContent.Add(new StreamContent(body[fileIndex].Stream), $\"file{{fileIndex}}\", body[fileIndex].FileName);");
+					break;
+				default:
+					callCodeBuilder.AppendLine($"{"\t\t"}multipartContent.Add(new StreamContent(body.Stream), \"file\", body.FileName);");
+					break;
+			}
+			callCodeBuilder.AppendLine($"{"\t\t"}request.Content = multipartContent;");
+		}
+		else if (request is { RequestType.Schema: not null })
+		{
+			methodArguments.Insert(0, $"{request.Value.RequestType.Schema.ToCsType()} body");
 			callCodeBuilder.AppendLine($"{"\t\t"}request.Content = JsonContent.Create(body, options: _jsonOptions);");
 		}
 		callCodeBuilder.AppendLine($"{"\t\t"}using var response = await _httpClient.SendAsync(request, cancellationToken);");
@@ -143,6 +172,30 @@ internal class EndpointCodeResolver : CodeResolverBase
 						=> $"{parameter.Name}={{HttpUtility.UrlEncode({memberName})}}",
 					_   => $"{parameter.Name}={{{memberName}}}"
 				};
+		}
+
+		bool IsFormFileUpload(out bool? multiple, out string[]? formNames)
+		{
+			if (request is { ContentType: { } ct } 
+			    && ct.Equals("multipart/form-data", StringComparison.InvariantCultureIgnoreCase)
+			    && request is { RequestType.Schema: { } s})
+			{
+				var isFileUpload = 
+					(s.Format ?? s.Items?.Format)?.Equals("binary", StringComparison.InvariantCultureIgnoreCase) == true
+					|| (s.Type == "object" && (s.Properties?.Any(p => p.Value.Format == "binary") ?? false)); // todo: use .Equals() ??
+				formNames = s.Properties?
+					.Where(p => p.Value.Format.Equals("binary", StringComparison.InvariantCultureIgnoreCase))
+					.Select(p => p.Key)
+					.ToArray() ?? [];
+				multiple = 
+					formNames.Length > 1
+					|| s.Items?.Format.Equals("binary", StringComparison.InvariantCultureIgnoreCase) == true;
+				return isFileUpload;
+			}
+
+			formNames = null;
+			multiple = null;
+			return false;
 		}
 	}
 }

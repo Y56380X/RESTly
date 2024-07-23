@@ -55,7 +55,6 @@ paths:
       parameters:
         - name: q
           in: query
-          style: form
           schema:
             type: string
       responses:
@@ -76,7 +75,6 @@ paths:
         - name: q
           in: query
           required: true
-          style: form
           schema:
             type: array
             items:
@@ -112,7 +110,6 @@ paths:
         - name: type
           in: path
           required: true
-          style: simple
           schema:
             type: string
       responses:
@@ -124,6 +121,70 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Item'
+  /upload-single:
+    post:
+      tags:
+        - RESTly.Samples.SimpleApi
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+            encoding:
+              file:
+                style: form
+      responses:
+        '200':
+          description: OK
+  /upload-multiple:
+    post:
+      tags:
+        - RESTly.Samples.SimpleApi
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - file1
+                - file2
+              type: object
+              properties:
+                file1:
+                  type: string
+                  format: binary
+                file2:
+                  type: string
+                  format: binary
+            encoding:
+              file1:
+                style: form
+              file2:
+                style: form
+      responses:
+        '200':
+          description: OK
+  /upload-collection:
+    post:
+      tags:
+        - RESTly.Samples.SimpleApi
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: array
+              items:
+                type: string
+                format: binary
+        required: true
+      responses:
+        '200':
+          description: OK
 components:
   schemas:
     Item:
