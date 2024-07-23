@@ -26,6 +26,8 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 			.Select(path => new EndpointCodeResolver(path.Key, path.Value))
 			.Select(ecr => ecr.GeneratedCode)
 			.Where(c => !string.IsNullOrWhiteSpace(c));
+
+		var clientClassName = _apiSpecification.Info.Title.Split('.').Last();
 		
 		var clientCode =
 			$$"""
@@ -44,12 +46,12 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 
 			  namespace Restly;
 
-			  public partial class {{_apiSpecification.Info.Title}} : IDisposable
+			  public partial class {{clientClassName}} : IDisposable
 			  {
 			  {{"\t"}}private readonly HttpClient _httpClient;
 			  {{"\t"}}private readonly JsonSerializerOptions _jsonOptions;
 
-			  {{"\t"}}public {{_apiSpecification.Info.Title}}(HttpClient httpClient)
+			  {{"\t"}}public {{clientClassName}}(HttpClient httpClient)
 			  {{"\t"}}{
 			  {{"\t\t"}}_httpClient  = httpClient;
 			  {{"\t\t"}}_jsonOptions = new JsonSerializerOptions
@@ -58,7 +60,7 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 			  {{"\t\t"}}};
 			  {{"\t"}}}
 
-			  {{"\t"}}public {{_apiSpecification.Info.Title}}(HttpClient httpClient, JsonSerializerOptions jsonOptions)
+			  {{"\t"}}public {{clientClassName}}(HttpClient httpClient, JsonSerializerOptions jsonOptions)
 			  {{"\t"}}{
 			  {{"\t\t"}}_httpClient  = httpClient;
 			  {{"\t\t"}}_jsonOptions = jsonOptions;
