@@ -29,6 +29,26 @@ var thingsResult = await simpleApi.QueryThingsByIndexAsync([1, 4]);
 Console.WriteLine(thingsResult);
 Console.WriteLine($"Things: {string.Join(", ", thingsResult.Model ?? ArraySegment<string?>.Empty)}");
 
+using var fileUpload0 = new MemoryStream([100, 100, 200]);
+var uploadSingleResult = await simpleApi.PostUploadSingleAsync((fileUpload0, "some_file.txt"));
+Console.WriteLine(uploadSingleResult);
+
+using var fileUpload1 = new MemoryStream([100, 100, 200]);
+using var fileUpload2 = new MemoryStream([100, 100, 200, 100, 100, 200]);
+var uploadMultipleResult = await simpleApi.PostUploadMultipleAsync([
+	(fileUpload1, "some_file_1.txt"),
+	(fileUpload2, "some_file_2.txt")]);
+Console.WriteLine(uploadMultipleResult);
+
+using var fileUpload3 = new MemoryStream([100, 100, 200]);
+using var fileUpload4 = new MemoryStream([100, 100, 200, 100, 100, 200]);
+using var fileUpload5 = new MemoryStream([100, 100, 200, 100, 100, 200, 100, 100, 200]);
+var uploadCollectionResult = await simpleApi.PostUploadCollectionAsync([
+	(fileUpload3, "some_file_3.txt"),
+	(fileUpload4, "some_file_4.txt"),
+	(fileUpload5, "some_file_5.txt")]);
+Console.WriteLine(uploadCollectionResult);
+
 [JsonSerializable(typeof(SimpleApi.WeatherForecast[]))]
 [JsonSerializable(typeof(IDictionary<string, int>))]
 [JsonSerializable(typeof(byte[]))]

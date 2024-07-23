@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="RESTly" Version="0.6.0" />
+      <PackageReference Include="RESTly" Version="0.7.0" />
     </ItemGroup>
 
 </Project>
