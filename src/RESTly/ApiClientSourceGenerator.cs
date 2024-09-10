@@ -32,8 +32,9 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 		var (attributes, additionalTexts) = (generationBase.Item1, generationBase.Item2);
 
 		// Generate API client code based on the given definition file names of the assembly attributes
-		var clientDefinitions = attributes.Select(a => 
-			(a.ConstructorArguments[0].Value as string, a.ConstructorArguments[1].Value as string));
+		var clientDefinitions = attributes.Select(a => (
+			Definition: a.ConstructorArguments[0].Value as string, 
+			Name      : a.ConstructorArguments[1].Value as string));
 		foreach (var (clientDefinition, clientName) in clientDefinitions)
 		{
 			if (string.IsNullOrWhiteSpace(clientDefinition) || string.IsNullOrWhiteSpace(clientName))
