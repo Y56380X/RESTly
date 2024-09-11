@@ -52,9 +52,9 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			.Select(p => GeneratePropertyCode(p, baseModel?.Properties.ContainsKey(p.Key) != true))
 			.ToArray();
 
-		var derivedTypes = _schema.Reference.HostDocument.Components.Schemas
+		var derivedTypes = _schema.Reference?.HostDocument?.Components.Schemas
 			.Where(s1 => s1.Value.AllOf.Any(s2 => s2.Equals(_schema)))
-			.ToArray();
+			.ToArray() ?? [];
 		
 		var propertyPrefix = modelProperties.Length > 1 ? "\n\t\t" : string.Empty;
 		var inheritanceCode = baseModel?.Type == "object"
