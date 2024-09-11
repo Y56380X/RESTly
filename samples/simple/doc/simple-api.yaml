@@ -185,8 +185,30 @@ paths:
       responses:
         '200':
           description: OK
+  /floors:
+    get:
+      tags:
+        - RESTly.Samples.SimpleApi
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FloorItem'
 components:
   schemas:
+    FloorItem:
+      allOf:
+        - $ref: '#/components/schemas/SomeBaseItem'
+        - type: object
+          properties:
+            floor:
+              type: integer
+              format: int32
+          additionalProperties: false
     Item:
       type: object
       properties:
@@ -204,6 +226,16 @@ components:
         - TestItem1
         - TestItem2
       type: string
+    SomeBaseItem:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+      additionalProperties: false
     WeatherForecast:
       type: object
       properties:

@@ -7,7 +7,10 @@ builder.Services.AddAntiforgery();
 
 // Add services to the container
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+	options.UseAllOfForInheritance();
+});
 
 var app = builder.Build();
 
@@ -125,6 +128,19 @@ app.MapPost("/upload-collection", (IFormFileCollection files) =>
 	.DisableAntiforgery()
 	.WithOpenApi();
 
+#region model inheritance
+
+app.MapGet("/floors", () => new[]
+	{
+		new FloorItem("Test Building", "Test Street", 0),
+		new FloorItem("Test Building", "Test Street", 1),
+		new FloorItem("Test Building", "Test Street", 2),
+		new FloorItem("Test Building", "Test Street", 3)
+	})
+	.WithOpenApi();
+
+#endregion
+
 app.Run();
 
 record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
@@ -140,3 +156,7 @@ enum ItemType
 	TestItem1,
 	TestItem2
 }
+
+record SomeBaseItem(string Name, string Location);
+
+record FloorItem(string Name, string Location, int Floor) : SomeBaseItem(Name, Location);

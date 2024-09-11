@@ -11,19 +11,21 @@ internal static class OpenApiExtensions
 	{
 		var baseType = schema.Type switch
 		{
-			"string" when schema.Enum.Any() 
-			              && schema.Reference is not null   => schema.Reference.Id.NormalizeCsName(),
-			"string" when schema is { Format: "byte" }      => "byte[]",
-			"string" when schema is { Format: "uuid" }      => "Guid",
-			"string" when schema is { Format: "date-time" } => "DateTime",
-			"string"                                        => "string",
-			"integer" when schema is { Format: "int64" }    => "long",
-			"integer"                                       => "int",
-			"array"                                         => $"{schema.Items.ToCsType()}[]",
-			"object" when schema.Reference is {} reference  => reference.Id.NormalizeCsName(),
-			"object" when schema.AdditionalProperties 
-					 is {} propertiesSchema                 => $"IDictionary<string, {propertiesSchema.ToCsType()}>",
-			_                                               => "object"
+			"string"  when schema.Enum.Any() 
+			              && schema.Reference is not null    => schema.Reference.Id.NormalizeCsName(),
+			"string"  when schema is { Format: "byte" }      => "byte[]",
+			"string"  when schema is { Format: "uuid" }      => "Guid",
+			"string"  when schema is { Format: "date-time" } => "DateTime",
+			"string"                                         => "string",
+			"integer" when schema is { Format: "int64" }     => "long",
+			"integer"                                        => "int",
+			"number"  when schema is { Format: "float" }     => "float",
+			"number"                                         => "double",
+			"array"                                          => $"{schema.Items.ToCsType()}[]",
+			"object"  when schema.AdditionalProperties 
+					      is {} propertiesSchema             => $"IDictionary<string, {propertiesSchema.ToCsType()}>",
+			_         when schema.Reference is {} reference  => reference.Id.NormalizeCsName(),
+			_                                                => "object"
 		};
 		char? nullable = schema.Nullable || forceNullable ? '?' : null;
 		return $"{baseType}{nullable}";

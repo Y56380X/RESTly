@@ -49,7 +49,11 @@ var uploadCollectionResult = await simpleApi.PostUploadCollectionAsync([
 	(fileUpload5, "some_file_5.txt")]);
 Console.WriteLine(uploadCollectionResult);
 
+var floors = await simpleApi.GetFloorsAsync();
+Console.WriteLine(floors.Model?.FirstOrDefault());
+
 [JsonSerializable(typeof(SimpleApi.WeatherForecast[]))]
+[JsonSerializable(typeof(SimpleApi.FloorItem[]))]
 [JsonSerializable(typeof(IDictionary<string, int>))]
 [JsonSerializable(typeof(byte[]))]
 [JsonSerializable(typeof(string[]))]

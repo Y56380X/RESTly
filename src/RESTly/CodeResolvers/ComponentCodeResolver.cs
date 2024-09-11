@@ -44,9 +44,19 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 
 	private string ResolveModel()
 	{
-		var modelProperties = _schema.Properties.Select(GeneratePropertyCode).ToArray();
+		var baseModel = _schema.AllOf.SingleOrDefault(s => s.Reference != null);
+		var modelProperties = _schema.Properties
+			.Concat(baseModel?.Properties ?? new Dictionary<string, OpenApiSchema>())
+			.Concat(_schema.AllOf.Where(s => s != baseModel).SelectMany(s => s.Properties))
+			// only properties outside the base class should be JSON annotated
+			.Select(p => GeneratePropertyCode(p, !(baseModel?.Properties.ContainsKey(p.Key) == true)))
+			.ToArray();
+		
 		var propertyPrefix = modelProperties.Length > 1 ? "\n\t\t" : string.Empty;
-		var modelCodeBuilder = new StringBuilder($"{"\t"}public record {_modelTypeName}({propertyPrefix}{string.Join(",\n\t\t", modelProperties)});");
+		var inheritanceCode = baseModel?.Type == "object"
+			? $"\n\t: {baseModel.Reference.Id.NormalizeCsName()}({string.Join(", ", baseModel.Properties.Select(p => GeneratePropertyName(p.Key)))})"
+			: null;
+		var modelCodeBuilder = new StringBuilder($"{"\t"}public record {_modelTypeName}({propertyPrefix}{string.Join(",\n\t\t", modelProperties)}){inheritanceCode};");
 		
 		// Generate sub models
 		foreach (var property in _schema.Properties.Where(p => IsSubModel(p.Value)))
@@ -70,17 +80,26 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 		schema is { Type: "object", Reference: null } 
 			   or { Type: "array", Items: { Type: "object", Reference: null } };
 
-	private string GeneratePropertyCode(KeyValuePair<string, OpenApiSchema> property)
+	private string GeneratePropertyName(string schemaName)
 	{
-		var normalizedPropertyName = property.Key.NormalizeCsName();
-		var selectedPropertyName = normalizedPropertyName == _modelTypeName
+		var normalizedPropertyName = schemaName.NormalizeCsName();
+		return normalizedPropertyName == _modelTypeName
 			? $"{normalizedPropertyName}_"
 			: normalizedPropertyName;
+	}
+	
+	private string GeneratePropertyCode(KeyValuePair<string, OpenApiSchema> property, bool withJsonAnnotation)
+	{
+		var propertyName = GeneratePropertyName(property.Key);
 
 		var propertyType = IsSubModel(property.Value)
 			? $"{GenerateSubModelName(property.Key)}{(property.Value.Type == "array" ? "[]" : string.Empty)}"
 			: property.Value.ToCsType();
+
+		var jsonPropertyName = withJsonAnnotation
+			? $"[property:JsonPropertyName(\"{property.Key}\")]"
+			: null;
 		
-		return $"[property:JsonPropertyName(\"{property.Key}\")]{propertyType} {selectedPropertyName}";
+		return $"{jsonPropertyName}{propertyType} {propertyName}";
 	}
 }
