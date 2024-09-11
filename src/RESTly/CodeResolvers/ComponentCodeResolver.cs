@@ -44,19 +44,32 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 
 	private string ResolveModel()
 	{
-		var baseModel = _schema.AllOf.SingleOrDefault(s => s.Reference != null);
+		var baseModel = _schema.AllOf.FirstOrDefault(s => s.Reference != null);
 		var modelProperties = _schema.Properties
 			.Concat(baseModel?.Properties ?? new Dictionary<string, OpenApiSchema>())
 			.Concat(_schema.AllOf.Where(s => s != baseModel).SelectMany(s => s.Properties))
 			// only properties outside the base class should be JSON annotated
-			.Select(p => GeneratePropertyCode(p, !(baseModel?.Properties.ContainsKey(p.Key) == true)))
+			.Select(p => GeneratePropertyCode(p, baseModel?.Properties.ContainsKey(p.Key) != true))
+			.ToArray();
+
+		var derivedTypes = _schema.Reference.HostDocument.Components.Schemas
+			.Where(s1 => s1.Value.AllOf.Any(s2 => s2.Equals(_schema)))
 			.ToArray();
 		
 		var propertyPrefix = modelProperties.Length > 1 ? "\n\t\t" : string.Empty;
 		var inheritanceCode = baseModel?.Type == "object"
 			? $"\n\t: {baseModel.Reference.Id.NormalizeCsName()}({string.Join(", ", baseModel.Properties.Select(p => GeneratePropertyName(p.Key)))})"
 			: null;
-		var modelCodeBuilder = new StringBuilder($"{"\t"}public record {_modelTypeName}({propertyPrefix}{string.Join(",\n\t\t", modelProperties)}){inheritanceCode};");
+
+		var modelCodeBuilder = new StringBuilder();
+		
+		// Add json polymorphic information when component has derived types
+		if (derivedTypes.Length > 0)
+			modelCodeBuilder.AppendLine($"{'\t'}[JsonPolymorphic]");
+		foreach (var derivedType in derivedTypes)
+			modelCodeBuilder.AppendLine($"{'\t'}[JsonDerivedType(typeof({derivedType.Key.NormalizeCsName()}), nameof({derivedType.Key.NormalizeCsName()}))]");
+
+		modelCodeBuilder.Append($"{"\t"}public record {_modelTypeName}({propertyPrefix}{string.Join(",\n\t\t", modelProperties)}){inheritanceCode};");
 		
 		// Generate sub models
 		foreach (var property in _schema.Properties.Where(p => IsSubModel(p.Value)))

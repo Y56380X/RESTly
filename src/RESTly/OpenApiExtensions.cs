@@ -25,9 +25,26 @@ internal static class OpenApiExtensions
 			"object"  when schema.AdditionalProperties 
 					      is {} propertiesSchema             => $"IDictionary<string, {propertiesSchema.ToCsType()}>",
 			_         when schema.Reference is {} reference  => reference.Id.NormalizeCsName(),
+			_		  when schema.OneOf 
+						  is { Count: > 0 } oneOf            => ResolveCommonBase(oneOf),
 			_                                                => "object"
 		};
 		char? nullable = schema.Nullable || forceNullable ? '?' : null;
 		return $"{baseType}{nullable}";
+
+		string ResolveCommonBase(IEnumerable<OpenApiSchema> oneOf)
+		{
+			var schemas = oneOf.Select(s => s.Reference.HostDocument.Components.Schemas[s.Reference.Id]);
+			var baseTypes = schemas
+				.Select(s => s.AllOf.FirstOrDefault(a => a.Reference != null)?.Reference?.Id)
+				.OfType<string>()
+				.Distinct()
+				.ToArray();
+			// resolve only when there is just one base type (as only then is is the common one)
+			// NOTE: currently only resolves in distance of 1
+			return baseTypes.Length == 1 
+				? baseTypes[0].NormalizeCsName() 
+				: "object";
+		}
 	}
 }

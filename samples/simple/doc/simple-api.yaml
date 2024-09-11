@@ -198,8 +198,67 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FloorItem'
+  /derived-types:
+    post:
+      tags:
+        - RESTly.Samples.SimpleApi
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/SomeTypeBase'
+                - $ref: '#/components/schemas/FinalType1'
+                - $ref: '#/components/schemas/FinalType2'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SomeTypeBase'
+                  - $ref: '#/components/schemas/FinalType1'
+                  - $ref: '#/components/schemas/FinalType2'
+    get:
+      tags:
+        - RESTly.Samples.SimpleApi
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                    - $ref: '#/components/schemas/SomeTypeBase'
+                    - $ref: '#/components/schemas/FinalType1'
+                    - $ref: '#/components/schemas/FinalType2'
 components:
   schemas:
+    FinalType1:
+      allOf:
+        - $ref: '#/components/schemas/SomeTypeBase'
+        - type: object
+          properties:
+            value:
+              type: integer
+              format: int32
+          additionalProperties: false
+    FinalType2:
+      allOf:
+        - $ref: '#/components/schemas/SomeTypeBase'
+        - type: object
+          properties:
+            tolerance:
+              type: number
+              format: double
+            targetValue:
+              type: number
+              format: double
+          additionalProperties: false
     FloorItem:
       allOf:
         - $ref: '#/components/schemas/SomeBaseItem'
@@ -233,6 +292,13 @@ components:
           type: string
           nullable: true
         location:
+          type: string
+          nullable: true
+      additionalProperties: false
+    SomeTypeBase:
+      type: object
+      properties:
+        name:
           type: string
           nullable: true
       additionalProperties: false

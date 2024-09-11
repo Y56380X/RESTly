@@ -10,6 +10,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
 	options.UseAllOfForInheritance();
+	options.UseOneOfForPolymorphism();
+	// todo: add resolver for discriminator name and value
+	// current implementation is opinionated on using '$type' and 'nameof()'
 });
 
 var app = builder.Build();
@@ -141,6 +144,25 @@ app.MapGet("/floors", () => new[]
 
 #endregion
 
+#region model polymorphism
+
+var jsonDerivedItems = new List<SomeTypeBase>
+{
+	new FinalType1("Test", 555)
+};
+
+app.MapPost("/derived-types", (SomeTypeBase item) =>
+	{ 
+		jsonDerivedItems.Add(item);
+		return item;
+	})
+	.WithOpenApi();
+
+app.MapGet("/derived-types", () => jsonDerivedItems)
+	.WithOpenApi();
+
+#endregion
+
 app.Run();
 
 record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
@@ -160,3 +182,12 @@ enum ItemType
 record SomeBaseItem(string Name, string Location);
 
 record FloorItem(string Name, string Location, int Floor) : SomeBaseItem(Name, Location);
+
+[JsonPolymorphic]
+[JsonDerivedType(typeof(FinalType1), nameof(FinalType1))]
+[JsonDerivedType(typeof(FinalType2), nameof(FinalType2))]
+record SomeTypeBase(string Name);
+
+sealed record FinalType1(string Name, int Value) : SomeTypeBase(Name);
+
+sealed record FinalType2(string Name, decimal Tolerance, decimal TargetValue) : SomeTypeBase(Name);
