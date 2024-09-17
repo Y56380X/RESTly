@@ -49,21 +49,17 @@ internal class EndpointCodeResolver : CodeResolverBase
 			.SelectMany(r => r.Value.Content.Select(c => c.Value))
 			.FirstOrDefault();
 		
-		var callsCode = GenerateCallCode(
-			pathTemplate, 
-			operationType, 
-			operation.Parameters.ToArray(), 
-			operation.OperationId, 
-			request, 
-			response);
+		var callsCode = GenerateCallCode(pathTemplate, operationType, operation, request, response);
 		
 		return callsCode;
 	}
 
 	private static string GenerateCallCode(string pathTemplate, OperationType operationType, 
-		OpenApiParameter[] parameters, string? operationId,
-		RequestDefinition? request, OpenApiMediaType? response)
+		OpenApiOperation operation, RequestDefinition? request, OpenApiMediaType? response)
 	{
+		var parameters = operation.Parameters.ToArray();
+		var operationId = operation.OperationId;
+		
 		var methodName = GenerateMethodName();
 		var methodArguments = parameters
 			.Select(GenerateMethodArgumentCode)
@@ -120,7 +116,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		};
 		if (response != null) responseArguments.Add("model");
 		
-		var callCode = 
+		var methodCode = 
 			$$"""
 			  {{"\t"}}public async Task<{{responseType}}> {{methodName}}({{string.Join(", ", methodArguments.Append("CancellationToken cancellationToken = default"))}})
 			  {{"\t"}}{
@@ -129,7 +125,19 @@ internal class EndpointCodeResolver : CodeResolverBase
 			  {{"\t"}}}
 			  """;
 		
-		return callCode;
+		var finalCodeBuilder = new StringBuilder();
+		if (!string.IsNullOrWhiteSpace(operation.Summary))
+		{
+			var operationSummary = operation.Summary.EndsWith(".") ? operation.Summary : $"{operation.Summary}.";
+			finalCodeBuilder.AppendLine($"{'\t'}/// <summary>");
+			foreach (var summaryPart in operationSummary.Split(['\n'], StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()))
+				finalCodeBuilder.AppendLine($"{'\t'}///\t{summaryPart}");
+			finalCodeBuilder.AppendLine($"{'\t'}/// </summary>");
+		}
+		
+		finalCodeBuilder.Append(methodCode);
+		
+		return finalCodeBuilder.ToString();
 		
 		string GenerateMethodName()
 		{
