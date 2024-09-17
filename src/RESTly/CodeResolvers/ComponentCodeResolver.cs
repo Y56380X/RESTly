@@ -35,7 +35,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 				enumCodeBuilder.AppendLine($"{'\t'}///\t{descriptionPart}");
 			enumCodeBuilder.AppendLine($"{'\t'}/// </summary>");
 		}
-		enumCodeBuilder.AppendLine($"{"\t"}public enum {_modelTypeName}\n");
+		enumCodeBuilder.AppendLine($"{"\t"}public enum {_modelTypeName}");
 		enumCodeBuilder.AppendLine($"{"\t"}{{");
 		enumCodeBuilder.AppendLine(string.Join(",\n", _schema.Enum.Select(ResolveEnumValue)));
 		enumCodeBuilder.Append($"{"\t"}}}");
