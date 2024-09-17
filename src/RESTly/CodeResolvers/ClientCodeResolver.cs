@@ -27,7 +27,7 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 			.Select(ecr => ecr.GeneratedCode)
 			.Where(c => !string.IsNullOrWhiteSpace(c));
 
-		var clientClassName = _apiSpecification.Info.Title.Split('.').Last();
+		var clientClassName = _apiSpecification.Info.Title.Split('.').Last().NormalizeCsName();
 		
 		var clientCode =
 			$$"""
