@@ -27,7 +27,15 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 
 	private string ResolveEnum()
 	{
-		var enumCodeBuilder = new StringBuilder($"{"\t"}public enum {_modelTypeName}\n");
+		var enumCodeBuilder = new StringBuilder();
+		if (_schema.Description is { } enumDescription)
+		{
+			enumCodeBuilder.AppendLine($"{'\t'}/// <summary>");
+			foreach (var descriptionPart in enumDescription.Split(['\n'], StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()))
+				enumCodeBuilder.AppendLine($"{'\t'}///\t{descriptionPart}");
+			enumCodeBuilder.AppendLine($"{'\t'}/// </summary>");
+		}
+		enumCodeBuilder.AppendLine($"{"\t"}public enum {_modelTypeName}\n");
 		enumCodeBuilder.AppendLine($"{"\t"}{{");
 		enumCodeBuilder.AppendLine(string.Join(",\n", _schema.Enum.Select(ResolveEnumValue)));
 		enumCodeBuilder.Append($"{"\t"}}}");
@@ -62,6 +70,13 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			: null;
 
 		var modelCodeBuilder = new StringBuilder();
+		if (_schema.Description is { } modelDescription)
+		{
+			modelCodeBuilder.AppendLine($"{'\t'}/// <summary>");
+			foreach (var descriptionPart in modelDescription.Split(['\n'], StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()))
+				modelCodeBuilder.AppendLine($"{'\t'}///\t{descriptionPart}");
+			modelCodeBuilder.AppendLine($"{'\t'}/// </summary>");
+		}
 		
 		// Add json polymorphic information when component has derived types
 		if (derivedTypes.Length > 0)
