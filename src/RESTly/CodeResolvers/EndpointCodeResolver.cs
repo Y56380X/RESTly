@@ -68,7 +68,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		var methodArguments = parameters
 			.Select(GenerateMethodArgumentCode)
 			.ToList();
-		var responseType = response is { Schema: not null}
+		var responseType = response is { Schema: not null }
 			? $"Response<{response.Schema.ToCsType(forceNullable: true)}>"
 			: "Response";
 		var httpMethod = HttpMethodMapping[operationType];
@@ -184,12 +184,12 @@ internal class EndpointCodeResolver : CodeResolverBase
 					(s.Format ?? s.Items?.Format)?.Equals("binary", StringComparison.InvariantCultureIgnoreCase) == true
 					|| (s.Type == "object" && (s.Properties?.Any(p => p.Value.Format == "binary") ?? false)); // todo: use .Equals() ??
 				formNames = s.Properties?
-					.Where(p => p.Value.Format.Equals("binary", StringComparison.InvariantCultureIgnoreCase))
+					.Where(p => p.Value.Format?.Equals("binary", StringComparison.InvariantCultureIgnoreCase) == true)
 					.Select(p => p.Key)
 					.ToArray() ?? [];
 				multiple = 
 					formNames.Length > 1
-					|| s.Items?.Format.Equals("binary", StringComparison.InvariantCultureIgnoreCase) == true;
+					|| s.Items?.Format?.Equals("binary", StringComparison.InvariantCultureIgnoreCase) == true;
 				return isFileUpload;
 			}
 
