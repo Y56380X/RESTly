@@ -10,5 +10,5 @@ internal static class StringExtensions
 		: s;
 	
 	public static string NormalizeCsName(this string typeName) => string.Concat(
-		typeName.Split(['-', '_', '.']).Select(Capitalize));
+		typeName.Split('-', '_', '.', ' ').Select(Capitalize));
 }
