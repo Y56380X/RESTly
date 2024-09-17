@@ -40,7 +40,7 @@ internal static class OpenApiExtensions
 				.OfType<string>()
 				.Distinct()
 				.ToArray();
-			// resolve only when there is just one base type (as only then is is the common one)
+			// resolve only when there is just one base type (as only then it is the common one)
 			// NOTE: currently only resolves in distance of 1
 			return baseTypes.Length == 1 
 				? baseTypes[0].NormalizeCsName() 

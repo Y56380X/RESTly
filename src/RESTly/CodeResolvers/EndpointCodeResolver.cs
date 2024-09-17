@@ -84,7 +84,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 			callCodeBuilder.AppendLine($"{"\t\t"}using var multipartContent = new MultipartFormDataContent();");
 			switch (multipleFiles)
 			{
-				case true when (formNames?.Length ?? 0) > 0: // unroll file list from schema
+				case true when formNames is { Length: > 0 }: // unroll file list from schema
 					for (var fileIndex = 0; fileIndex < formNames.Length; fileIndex++)
 						callCodeBuilder.AppendLine($"{"\t\t"}multipartContent.Add(new StreamContent(body[{fileIndex}].Stream), \"{formNames[fileIndex]}\", body[{fileIndex}].FileName);");
 					break;
