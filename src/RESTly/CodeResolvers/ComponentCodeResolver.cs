@@ -45,7 +45,9 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 		string? ResolveEnumValue(IOpenApiAny enumValue) => enumValue switch
 		{
 			OpenApiInteger oaEnumInteger => $"{"\t\t"}Value{oaEnumInteger.Value} = {oaEnumInteger.Value}",
-			OpenApiString  oaEnumString  => $"{"\t\t"}{oaEnumString.Value.NormalizeCsName()}",
+			OpenApiString  oaEnumString1 when int.TryParse(oaEnumString1.Value, out var intFromString) => 
+											$"{"\t\t"}Value{intFromString} = {intFromString}",
+			OpenApiString  oaEnumString2 => $"{"\t\t"}{oaEnumString2.Value.NormalizeCsName()}",
 			_ => null // currently returns null; todo: give diagnostics info
 		};
 	}
