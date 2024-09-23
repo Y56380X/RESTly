@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.OpenApi.Models;
 using RequestDefinition = (string ContentType, Microsoft.OpenApi.Models.OpenApiMediaType RequestType);
 
@@ -157,17 +158,21 @@ internal class EndpointCodeResolver : CodeResolverBase
 		}
 
 		string GenerateMethodArgumentCode(OpenApiParameter parameter) => 
-			$"{parameter.Schema.ToCsType()} {parameter.Name}";
+			$"{parameter.Schema.ToCsType()} {parameter.Name.NormalizeCsName(false)}";
 
 		string GeneratePreparedPathTemplate()
 		{
 			var queryParameters = parameters
 				.Where(p => p.In == ParameterLocation.Query)
 				.Select(p => p.Schema?.Type == "array"
-					? $"{{string.Join(\"&\", {p.Name}.Select(x => $\"{GenerateParameterAssignment(p, "x")}\"))}}"
-					: GenerateParameterAssignment(p, p.Name))
+					? $"{{string.Join(\"&\", {p.Name.NormalizeCsName(false)}.Select(x => $\"{GenerateParameterAssignment(p, "x")}\"))}}"
+					: GenerateParameterAssignment(p, p.Name.NormalizeCsName(false)))
 				.ToArray();
-			var baseUrl = pathTemplate.TrimStart(['/', '\\']);
+			
+			// Generate `baseUrl`; path parameters should be normalized to C# names
+			var pathParameterRegex = new Regex(@"\{([^\}]+)\}");
+			var baseUrl = pathParameterRegex.Replace(pathTemplate, m => m.Result(m.Value.NormalizeCsName(false))).TrimStart('/', '\\');
+			
 			var path = queryParameters.Any() ? 
 				$"{baseUrl}?{string.Join("&", queryParameters)}"
 				: baseUrl;
