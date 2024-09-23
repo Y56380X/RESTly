@@ -114,7 +114,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 			"response.IsSuccessStatusCode",
 			"response.StatusCode"
 		};
-		if (response != null) responseArguments.Add("model");
+		if (response is { Schema: not null }) responseArguments.Add("model");
 		
 		var methodCode = 
 			$$"""
