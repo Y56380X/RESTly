@@ -71,10 +71,10 @@ internal class EndpointCodeResolver : CodeResolverBase
 		string? generateResponseModelType;
 		if (response is { Schema: not null })
 		{
-			var methodModelName = methodName.Substring(0, methodName.Length - "Async".Length);
-			var modelType = response.Schema.ToCsType(out var generated, methodModelName);
+			var responseModelName = $"{methodName.Substring(0, methodName.Length - "Async".Length)}Result";
+			var modelType = response.Schema.ToCsType(out var generate, responseModelName);
 			responseType = $"Response<{modelType}>";
-			generateResponseModelType = generated ? methodModelName : null;
+			generateResponseModelType = generate ? responseModelName : null;
 		}
 		else
 		{
@@ -86,6 +86,8 @@ internal class EndpointCodeResolver : CodeResolverBase
 
 		var callCodeBuilder = new StringBuilder();
 		callCodeBuilder.AppendLine($"""using var request = new HttpRequestMessage({httpMethod}, $"{preparedPathTemplate}");""");
+
+		string? generateRequestModelType;
 		if (IsFormFileUpload(out var multipleFiles, out var formNames))
 		{
 			// todo: better handling of input of multiple file form fields!
@@ -107,18 +109,26 @@ internal class EndpointCodeResolver : CodeResolverBase
 					break;
 			}
 			callCodeBuilder.AppendLine($"{"\t\t"}request.Content = multipartContent;");
+			generateRequestModelType = null;
 		}
 		else if (request is { RequestType.Schema: not null })
 		{
-			methodArguments.Insert(0, $"{request.Value.RequestType.Schema.ToCsType()} body");
+			var bodyTypeName = $"{methodName.Substring(0, methodName.Length - "Async".Length)}Body";
+			methodArguments.Insert(0, $"{request.Value.RequestType.Schema.ToCsType(out var generate, bodyTypeName)} body");
 			callCodeBuilder.AppendLine($"{"\t\t"}request.Content = JsonContent.Create(body, options: _jsonOptions);");
+			generateRequestModelType = generate ? bodyTypeName : null;
 		}
+		else
+		{
+			generateRequestModelType = null;
+		}
+		
 		callCodeBuilder.AppendLine($"{"\t\t"}using var response = await _httpClient.SendAsync(request, cancellationToken);");
 		if (response is { Schema: not null })
 		{
-			callCodeBuilder.AppendLine($"{"\t\t"}{response.Schema.ToCsType(forceNullable: true)} model;");
+			callCodeBuilder.AppendLine($"{"\t\t"}{response.Schema.ToCsType(out _, generateResponseModelType, forceNullable: true)} model;");
 			callCodeBuilder.AppendLine($"{"\t\t"}if (response.IsSuccessStatusCode)");
-			callCodeBuilder.AppendLine($"{"\t\t\t"}model = JsonSerializer.Deserialize<{response.Schema.ToCsType()}>(await response.Content.ReadAsStreamAsync(cancellationToken), _jsonOptions);");
+			callCodeBuilder.AppendLine($"{"\t\t\t"}model = JsonSerializer.Deserialize<{response.Schema.ToCsType(out _, generateResponseModelType)}>(await response.Content.ReadAsStreamAsync(cancellationToken), _jsonOptions);");
 			callCodeBuilder.AppendLine($"{"\t\t"}else");
 			callCodeBuilder.AppendLine($"{"\t\t\t"}model = default;");
 		}
@@ -153,9 +163,9 @@ internal class EndpointCodeResolver : CodeResolverBase
 		
 		// Write back generated types
 		if (generateResponseModelType != null && response?.Schema is {} responseSchema)
-		{
 			_components.Schemas.Add(generateResponseModelType, responseSchema);
-		}
+		if (generateRequestModelType != null && request?.RequestType.Schema is {} requestSchema)
+			_components.Schemas.Add(generateRequestModelType, requestSchema);
 		
 		return finalCodeBuilder.ToString();
 		
