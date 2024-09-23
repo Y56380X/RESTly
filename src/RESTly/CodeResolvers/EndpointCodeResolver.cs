@@ -19,14 +19,16 @@ internal class EndpointCodeResolver : CodeResolverBase
 			{ OperationType.Put   , "HttpMethod.Put"    },
 			{ OperationType.Delete, "HttpMethod.Delete" }
 		};
-	
+
+	private readonly OpenApiComponents _components;
 	private readonly OpenApiPathItem _pathItem;
 	private readonly string _pathTemplate;
 
-	public EndpointCodeResolver(string pathTemplate, OpenApiPathItem pathItem)
+	public EndpointCodeResolver(string pathTemplate, OpenApiPathItem pathItem, OpenApiComponents components)
 	{
 		_pathTemplate = pathTemplate;
 		_pathItem = pathItem;
+		_components = components;
 	}
 	
 	protected override string Resolve()
@@ -37,7 +39,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		return string.Join("\n\n", callsCode);
 	}
 	
-	private static string? GenerateOperationCode(string pathTemplate, OperationType operationType, OpenApiOperation operation)
+	private string? GenerateOperationCode(string pathTemplate, OperationType operationType, OpenApiOperation operation)
 	{
 		// Check for operation type support
 		if (!HttpMethodMapping.ContainsKey(operationType))
@@ -55,7 +57,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		return callsCode;
 	}
 
-	private static string GenerateCallCode(string pathTemplate, OperationType operationType, 
+	private string GenerateCallCode(string pathTemplate, OperationType operationType, 
 		OpenApiOperation operation, RequestDefinition? request, OpenApiMediaType? response)
 	{
 		var parameters = operation.Parameters.ToArray();
@@ -65,9 +67,20 @@ internal class EndpointCodeResolver : CodeResolverBase
 		var methodArguments = parameters
 			.Select(GenerateMethodArgumentCode)
 			.ToList();
-		var responseType = response is { Schema: not null }
-			? $"Response<{response.Schema.ToCsType(forceNullable: true)}>"
-			: "Response";
+		string responseType;
+		string? generateResponseModelType;
+		if (response is { Schema: not null })
+		{
+			var methodModelName = methodName.Substring(0, methodName.Length - "Async".Length);
+			var modelType = response.Schema.ToCsType(out var generated, methodModelName);
+			responseType = $"Response<{modelType}>";
+			generateResponseModelType = generated ? methodModelName : null;
+		}
+		else
+		{
+			generateResponseModelType = null;
+			responseType = "Response";
+		}
 		var httpMethod = HttpMethodMapping[operationType];
 		var preparedPathTemplate = GeneratePreparedPathTemplate();
 
@@ -137,6 +150,12 @@ internal class EndpointCodeResolver : CodeResolverBase
 		}
 		
 		finalCodeBuilder.Append(methodCode);
+		
+		// Write back generated types
+		if (generateResponseModelType != null && response?.Schema is {} responseSchema)
+		{
+			_components.Schemas.Add(generateResponseModelType, responseSchema);
+		}
 		
 		return finalCodeBuilder.ToString();
 		

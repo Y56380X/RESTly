@@ -7,12 +7,12 @@ namespace Restly;
 
 internal static class OpenApiExtensions
 {
-	public static string ToCsType(this OpenApiSchema schema, bool forceNullable = false)
+	public static string ToCsType(this OpenApiSchema schema, out bool generate, string? generatedName = null, bool forceNullable = false)
 	{
 		var baseType = schema.Type switch
 		{
 			"string"  when schema.Enum.Any() 
-			              && schema.Reference is not null    => schema.Reference.Id.NormalizeCsName(),
+			               && schema.Reference is not null   => schema.Reference.Id.NormalizeCsName(),
 			"string"  when schema is { Format: "byte" }      => "byte[]",
 			"string"  when schema is { Format: "uuid" }      => "Guid",
 			"string"  when schema is { Format: "date-time" } => "DateTime",
@@ -23,12 +23,15 @@ internal static class OpenApiExtensions
 			"number"                                         => "double",
 			"array"                                          => $"{schema.Items.ToCsType()}[]",
 			"object"  when schema.AdditionalProperties 
-					      is {} propertiesSchema             => $"IDictionary<string, {propertiesSchema.ToCsType()}>",
+					       is {} propertiesSchema            => $"IDictionary<string, {propertiesSchema.ToCsType()}>",
 			_         when schema.Reference is {} reference  => reference.Id.NormalizeCsName(),
 			_		  when schema.OneOf 
-						  is { Count: > 0 } oneOf            => ResolveCommonBase(oneOf),
+				           is { Count: > 0 } oneOf           => ResolveCommonBase(oneOf),
+			_         when schema.Properties.Any()           => generatedName ?? "object",
 			_                                                => "object"
 		};
+		generate = generatedName is not null && baseType.StartsWith(generatedName);
+		
 		char? nullable = schema.Nullable || forceNullable ? '?' : null;
 		return $"{baseType}{nullable}";
 
@@ -47,4 +50,7 @@ internal static class OpenApiExtensions
 				: "object";
 		}
 	}
+	
+	public static string ToCsType(this OpenApiSchema schema, bool forceNullable = false) => 
+		ToCsType(schema, out _, forceNullable: forceNullable);
 }
