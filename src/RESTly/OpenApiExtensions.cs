@@ -7,8 +7,17 @@ namespace Restly;
 
 internal static class OpenApiExtensions
 {
-	public static string ToCsType(this OpenApiSchema schema, out bool generate, string? generatedName = null, bool forceNullable = false)
+	private const int RecursionDepthLimit = 1; // todo: adjust max recursion depth and loop detection
+	
+	public static string ToCsType(this OpenApiSchema schema, out bool generate, string? generatedName = null, bool forceNullable = false, int stop = RecursionDepthLimit)
 	{
+		if (stop <= 0)
+		{
+			generate = false;
+			return "object";
+		}
+
+		generate = false;
 		var baseType = schema.Type switch
 		{
 			"string"  when schema.Enum.Any() 
@@ -21,16 +30,20 @@ internal static class OpenApiExtensions
 			"integer"                                        => "int",
 			"number"  when schema is { Format: "float" }     => "float",
 			"number"                                         => "double",
-			"array"                                          => $"{schema.Items.ToCsType()}[]",
+			"array"                                          => $"{schema.Items.ToCsType(out generate, generatedName, false, stop)}[]",
 			"object"  when schema.AdditionalProperties 
-					       is {} propertiesSchema            => $"IDictionary<string, {propertiesSchema.ToCsType()}>",
+					       is {} propertiesSchema            => $"IDictionary<string, {propertiesSchema.ToCsType(out generate, generatedName, forceNullable, stop)}>",
+			_         when schema.Reference is {} reference
+                           && ResolveReferenceSchema(reference) is {} referenceSchema
+                           && !referenceSchema.Properties.Any()
+				                                             => ResolveReferenceSchema(reference)?.ToCsType(out generate, generatedName, forceNullable, stop - 1) ?? reference.Id.NormalizeCsName(),
 			_         when schema.Reference is {} reference  => reference.Id.NormalizeCsName(),
 			_		  when schema.OneOf 
 				           is { Count: > 0 } oneOf           => ResolveCommonBase(oneOf),
 			_         when schema.Properties.Any()           => generatedName ?? "object",
 			_                                                => "object"
 		};
-		generate = generatedName is not null && baseType.StartsWith(generatedName);
+		generate = generate || (generatedName is not null && baseType.StartsWith(generatedName));
 		
 		char? nullable = schema.Nullable || forceNullable ? '?' : null;
 		return $"{baseType}{nullable}";
@@ -49,6 +62,11 @@ internal static class OpenApiExtensions
 				? baseTypes[0].NormalizeCsName() 
 				: "object";
 		}
+
+		OpenApiSchema? ResolveReferenceSchema(OpenApiReference reference) =>
+			reference.HostDocument?.Components.Schemas.TryGetValue(reference.Id, out var referenceSchema) ?? false
+				? referenceSchema
+				: null;
 	}
 	
 	public static string ToCsType(this OpenApiSchema schema, bool forceNullable = false) => 
