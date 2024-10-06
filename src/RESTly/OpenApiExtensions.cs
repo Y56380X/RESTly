@@ -30,6 +30,7 @@ internal static class OpenApiExtensions
 			"integer"                                        => "int",
 			"number"  when schema is { Format: "float" }     => "float",
 			"number"                                         => "double",
+			"boolean"                                        => "bool",
 			"array"                                          => $"{schema.Items.ToCsType(out generate, generatedName, false, stop)}[]",
 			"object"  when schema.AdditionalProperties 
 					       is {} propertiesSchema            => $"IDictionary<string, {propertiesSchema.ToCsType(out generate, generatedName, forceNullable, stop)}>",
