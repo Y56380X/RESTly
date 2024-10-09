@@ -33,7 +33,7 @@ internal static class OpenApiExtensions
 			"boolean"                                        => "bool",
 			"array"                                          => $"{schema.Items.ToCsType(out generate, generatedName, false, stop)}[]",
 			"object"  when schema.AdditionalProperties 
-					       is {} propertiesSchema            => $"IDictionary<string, {propertiesSchema.ToCsType(out generate, generatedName, forceNullable, stop)}>",
+					       is {} propertiesSchema            => $"IDictionary<string, {propertiesSchema.ToCsType(out generate, generatedName, stop: stop)}>",
 			_         when schema.Reference is {} reference
                            && ResolveReferenceSchema(reference) is {} referenceSchema
                            && !referenceSchema.Properties.Any()

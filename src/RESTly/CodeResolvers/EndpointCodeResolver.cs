@@ -72,7 +72,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		if (response is { Schema: not null })
 		{
 			var responseModelName = $"{methodName.Substring(0, methodName.Length - "Async".Length)}Result";
-			var modelType = response.Schema.ToCsType(out var generate, responseModelName);
+			var modelType = response.Schema.ToCsType(out var generate, responseModelName, forceNullable: true);
 			responseType = $"Response<{modelType}>";
 			generateResponseModelType = generate ? responseModelName : null;
 		}
