@@ -26,6 +26,8 @@ internal static class OpenApiExtensions
 			"string"  when schema is { Format: "uuid" }      => "Guid",
 			"string"  when schema is { Format: "date-time" } => "DateTime",
 			"string"                                         => "string",
+			"integer" when schema.Enum.Any() 
+			               && schema.Reference is not null   => schema.Reference.Id.NormalizeCsName(),
 			"integer" when schema is { Format: "int64" }     => "long",
 			"integer"                                        => "int",
 			"number"  when schema is { Format: "float" }     => "float",
