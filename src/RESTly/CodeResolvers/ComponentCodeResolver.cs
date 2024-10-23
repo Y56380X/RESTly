@@ -42,14 +42,24 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 
 		return enumCodeBuilder.ToString();
 
-		string? ResolveEnumValue(IOpenApiAny enumValue) => enumValue switch
+		string? ResolveEnumValue(IOpenApiAny enumValue)
 		{
-			OpenApiInteger oaEnumInteger => $"{"\t\t"}Value{oaEnumInteger.Value} = {oaEnumInteger.Value}",
-			OpenApiString  oaEnumString1 when int.TryParse(oaEnumString1.Value, out var intFromString) => 
-											$"{"\t\t"}Value{intFromString} = {intFromString}",
-			OpenApiString  oaEnumString2 => $"{"\t\t"}{oaEnumString2.Value.NormalizeCsName()}",
-			_ => null // currently returns null; todo: give diagnostics info
-		};
+			var (enumMemberValue, realValue) = enumValue switch
+			{
+				OpenApiInteger oaEnumInteger => ($"{"\t\t"}Value{oaEnumInteger.Value} = {oaEnumInteger.Value}", oaEnumInteger.Value.ToString()),
+				OpenApiString  oaEnumString1 when int.TryParse(oaEnumString1.Value, out var intFromString)
+					=> ($"{"\t\t"}Value{intFromString} = {intFromString}", oaEnumString1.Value),
+				OpenApiString  oaEnumString2  => ($"{"\t\t"}{oaEnumString2.Value.NormalizeCsName()}", oaEnumString2.Value),
+				_                            => (null, null) // currently returns null; todo: give diagnostics info
+			};
+
+			if (enumMemberValue == null)
+				return null;
+			if (enumMemberValue.Trim() == realValue)
+				return enumMemberValue;
+
+			return $"{"\t\t"}[JsonStringEnumMemberName(\"{realValue}\")]\n{enumMemberValue}";
+		}
 	}
 
 	private string ResolveModel()
