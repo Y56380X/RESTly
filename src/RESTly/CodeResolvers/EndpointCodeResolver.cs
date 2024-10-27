@@ -69,7 +69,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 			.ToList();
 		string responseType;
 		string? generateResponseModelType;
-		if (response is { Schema: not null })
+		if (response is { Schema: not null } && operationType is not OperationType.Head)
 		{
 			var responseModelName = $"{methodName.Substring(0, methodName.Length - "Async".Length)}Result";
 			var modelType = response.Schema.ToCsType(out var generate, responseModelName, forceNullable: true);
@@ -124,7 +124,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		}
 		
 		callCodeBuilder.AppendLine($"{"\t\t"}using var response = await _httpClient.SendAsync(request, cancellationToken);");
-		if (response is { Schema: not null })
+		if (response is { Schema: not null } && operationType is not OperationType.Head)
 		{
 			callCodeBuilder.AppendLine($"{"\t\t"}{response.Schema.ToCsType(out _, generateResponseModelType, forceNullable: true)} model;");
 			callCodeBuilder.AppendLine($"{"\t\t"}if (response.IsSuccessStatusCode)");
@@ -138,7 +138,8 @@ internal class EndpointCodeResolver : CodeResolverBase
 			"response.IsSuccessStatusCode",
 			"response.StatusCode"
 		};
-		if (response is { Schema: not null }) responseArguments.Add("model");
+		if (response is { Schema: not null } && operationType is not OperationType.Head)
+			responseArguments.Add("model");
 		
 		var methodCode = 
 			$$"""
