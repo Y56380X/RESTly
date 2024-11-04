@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Restly;
 
-[Generator]
+[Generator(LanguageNames.CSharp)]
 public class FoundationSourceGenerator : IIncrementalGenerator
 {
 	private const string ClientAttributeCode =
@@ -97,19 +97,24 @@ public class FoundationSourceGenerator : IIncrementalGenerator
 			"HttpContentPolyfill.g.cs",
 			SourceText.From(HttpContentPolyfillCode, Encoding.UTF8)));
 
-		context.RegisterSourceOutput(
-			context.CompilationProvider.SelectMany((compilation, cancellationToken) =>
+		var generateJsonPolyfill = context.CompilationProvider
+			.Select((compilation, cancellationToken) =>
 			{
-				var jsonAssembly = compilation.GetUsedAssemblyReferences(cancellationToken)
+				return compilation.GetUsedAssemblyReferences(cancellationToken)
 					.Select(compilation.GetAssemblyOrModuleSymbol)
 					.FirstOrDefault(a => a?.Name == "System.Text.Json");
-				return (jsonAssembly as IAssemblySymbol)?.TypeNames.Where(n => n == "JsonStringEnumMemberNameAttribute") ?? [];
-			}).Collect(),
-			(ctx, array) =>
+			})
+			.Select((jsonAssembly, _) =>
 			{
-				if (array.Length > 0)
-					return;
-				ctx.AddSource("JsonPolyfillCode.g.cs", SourceText.From(JsonPolyfillCode, Encoding.UTF8));
+				if (jsonAssembly is not IAssemblySymbol assemblySymbol)
+					return true;
+				return assemblySymbol.TypeNames.All(n => n != "JsonStringEnumMemberNameAttribute");
 			});
+		context.RegisterSourceOutput(generateJsonPolyfill, (ctx, generate) =>
+		{
+			if (!generate)
+				return;
+			ctx.AddSource("JsonPolyfillCode.g.cs", SourceText.From(JsonPolyfillCode, Encoding.UTF8));
+		});
 	}
 }

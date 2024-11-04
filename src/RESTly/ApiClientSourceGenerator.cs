@@ -11,7 +11,7 @@ using Restly.CodeResolvers;
 
 namespace Restly;
 
-[Generator]
+[Generator(LanguageNames.CSharp)]
 public class ApiClientSourceGenerator : IIncrementalGenerator
 {
 	public void Initialize(IncrementalGeneratorInitializationContext context)
