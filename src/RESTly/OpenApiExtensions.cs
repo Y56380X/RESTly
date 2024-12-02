@@ -42,7 +42,9 @@ internal static class OpenApiExtensions
 				                                             => ResolveReferenceSchema(reference)?.ToCsType(out generate, generatedName, forceNullable, stop - 1) ?? reference.Id.NormalizeCsName(),
 			_         when schema.Reference is {} reference  => reference.Id.NormalizeCsName(),
 			_		  when schema.OneOf 
-				           is { Count: > 0 } oneOf           => ResolveCommonBase(oneOf),
+				           is { Count: > 0 } oneOf           => ResolveOneOf(oneOf),
+			_		  when schema.AnyOf
+						   is { Count: > 0 } anyOf           => ResolveAnyOf(anyOf),
 			_         when schema.Properties.Any()           => generatedName ?? "object",
 			_                                                => "object"
 		};
@@ -51,7 +53,17 @@ internal static class OpenApiExtensions
 		char? nullable = schema.Nullable || forceNullable ? '?' : null;
 		return $"{baseType}{nullable}";
 
-		string ResolveCommonBase(IEnumerable<OpenApiSchema> oneOf)
+		string ResolveAnyOf(IList<OpenApiSchema> anyOf)
+		{
+			var possiblyNullable = anyOf.Any(s => s.Type == "null");
+			var typeCandidates = anyOf.Where(s => s.Type != "null").ToArray();
+			
+			return typeCandidates.Length == 1 // NOTE: currently just resolve when there is just one other type than `null`
+				? typeCandidates.Single().ToCsType(out _, forceNullable: possiblyNullable)
+				: "object";
+		}
+
+		string ResolveOneOf(IEnumerable<OpenApiSchema> oneOf)
 		{
 			var schemas = oneOf.Select(s => s.Reference.HostDocument.Components.Schemas[s.Reference.Id]);
 			var baseTypes = schemas
