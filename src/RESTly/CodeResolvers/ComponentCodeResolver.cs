@@ -68,6 +68,8 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 		var modelProperties = _schema.Properties
 			.Concat(baseModel?.Properties ?? new Dictionary<string, OpenApiSchema>())
 			.Concat(_schema.AllOf.Where(s => s != baseModel).SelectMany(s => s.Properties))
+			.ToArray();
+		var modelPropertyCodeFragments = modelProperties
 			// only properties outside the base class should be JSON annotated
 			.Select(p => GeneratePropertyCode(p, baseModel?.Properties.ContainsKey(p.Key) != true))
 			.ToArray();
@@ -82,12 +84,21 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			: null;
 
 		var modelCodeBuilder = new StringBuilder();
+		
+		// Generate XML annotation
 		if (_schema.Description is { } modelDescription)
 		{
 			modelCodeBuilder.AppendLine($"{'\t'}/// <summary>");
 			foreach (var descriptionPart in modelDescription.Split(['\n'], StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()))
 				modelCodeBuilder.AppendLine($"{'\t'}///\t{descriptionPart}");
 			modelCodeBuilder.AppendLine($"{'\t'}/// </summary>");
+		}
+		foreach (var modelProperty in modelProperties.Where(p => !string.IsNullOrWhiteSpace(p.Value.Description)))
+		{
+			modelCodeBuilder.AppendLine($"""{'\t'}/// <param name="{GeneratePropertyName(modelProperty.Key)}">""");
+			foreach (var descriptionPart in modelProperty.Value.Description.Split(['\n'], StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()))
+				modelCodeBuilder.AppendLine($"{'\t'}///\t{descriptionPart}");
+			modelCodeBuilder.AppendLine($"{'\t'}/// </param>");
 		}
 		
 		// Add json polymorphic information when component has derived types
@@ -96,7 +107,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 		foreach (var derivedType in derivedTypes)
 			modelCodeBuilder.AppendLine($"{'\t'}[JsonDerivedType(typeof({derivedType.Key.NormalizeCsName()}), nameof({derivedType.Key.NormalizeCsName()}))]");
 
-		modelCodeBuilder.Append($"{"\t"}public record {_modelTypeName}({propertyPrefix}{string.Join(",\n\t\t", modelProperties)}){inheritanceCode};");
+		modelCodeBuilder.Append($"{"\t"}public record {_modelTypeName}({propertyPrefix}{string.Join(",\n\t\t", modelPropertyCodeFragments)}){inheritanceCode};");
 		
 		// Generate sub models
 		foreach (var property in _schema.Properties.Where(p => IsSubModel(p.Value)))
