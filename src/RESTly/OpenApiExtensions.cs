@@ -20,21 +20,21 @@ internal static class OpenApiExtensions
 		generate = false;
 		var baseType = schema.Type switch
 		{
-			"string"  when schema.Enum.Any() 
-			               && schema.Reference is not null   => schema.Reference.Id.NormalizeCsName(),
-			"string"  when schema is { Format: "byte" }      => "byte[]",
-			"string"  when schema is { Format: "uuid" }      => "Guid",
-			"string"  when schema is { Format: "date-time" } => "DateTime",
-			"string"                                         => "string",
-			"integer" when schema.Enum.Any() 
-			               && schema.Reference is not null   => schema.Reference.Id.NormalizeCsName(),
-			"integer" when schema is { Format: "int64" }     => "long",
-			"integer"                                        => "int",
-			"number"  when schema is { Format: "float" }     => "float",
-			"number"                                         => "double",
-			"boolean"                                        => "bool",
-			"array"                                          => $"{schema.Items.ToCsType(out generate, generatedName, false, stop)}[]",
-			"object"  when schema.AdditionalProperties 
+			JsonSchemaType.String when schema.Enum.Any() 
+			                               && schema.Reference is not null   => schema.Reference.Id.NormalizeCsName(),
+			JsonSchemaType.String  when schema is { Format: "byte" }      => "byte[]",
+			JsonSchemaType.String  when schema is { Format: "uuid" }      => "Guid",
+			JsonSchemaType.String  when schema is { Format: "date-time" } => "DateTime",
+			JsonSchemaType.String                                        => "string",
+			JsonSchemaType.Integer when schema.Enum.Any() 
+			                           && schema.Reference is not null   => schema.Reference.Id.NormalizeCsName(),
+			JsonSchemaType.Integer when schema is { Format: "int64" }     => "long",
+			JsonSchemaType.Integer                                        => "int",
+			JsonSchemaType.Number  when schema is { Format: "float" }     => "float",
+			JsonSchemaType.Number                                         => "double",
+			JsonSchemaType.Boolean                                        => "bool",
+			JsonSchemaType.Array                                          => $"{schema.Items?.ToCsType(out generate, generatedName, false, stop) ?? "object"}[]",
+			JsonSchemaType.Object  when schema.AdditionalProperties 
 					       is {} propertiesSchema            => $"IDictionary<string, {propertiesSchema.ToCsType(out generate, generatedName, stop: stop)}>",
 			_         when schema.Reference is {} reference
                            && ResolveReferenceSchema(reference) is {} referenceSchema
@@ -55,8 +55,8 @@ internal static class OpenApiExtensions
 
 		string ResolveAnyOf(IList<OpenApiSchema> anyOf)
 		{
-			var possiblyNullable = anyOf.Any(s => s.Type == "null");
-			var typeCandidates = anyOf.Where(s => s.Type != "null").ToArray();
+			var possiblyNullable = anyOf.Any(s => s.Type == JsonSchemaType.Null);
+			var typeCandidates = anyOf.Where(s => s.Type != JsonSchemaType.Null).ToArray();
 			
 			return typeCandidates.Length == 1 // NOTE: currently just resolve when there is just one other type than `null`
 				? typeCandidates.Single().ToCsType(out _, forceNullable: possiblyNullable)

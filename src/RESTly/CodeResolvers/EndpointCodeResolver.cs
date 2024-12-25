@@ -194,7 +194,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		{
 			var queryParameters = parameters
 				.Where(p => p.In == ParameterLocation.Query)
-				.Select(p => p.Schema?.Type == "array"
+				.Select(p => p.Schema?.Type == JsonSchemaType.Array
 					? $"{{string.Join(\"&\", {p.Name.NormalizeCsName(false)}.Select(x => $\"{GenerateParameterAssignment(p, "x")}\"))}}"
 					: GenerateParameterAssignment(p, p.Name.NormalizeCsName(false)))
 				.ToArray();
@@ -211,7 +211,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 			string GenerateParameterAssignment(OpenApiParameter parameter, string memberName) =>
 				parameter.Schema?.Type switch
 				{
-					"string" when !parameter.Schema.Enum.Any()
+					JsonSchemaType.String when !parameter.Schema.Enum.Any()
 						=> $"{parameter.Name}={{HttpUtility.UrlEncode({memberName})}}",
 					_   => $"{parameter.Name}={{{memberName}}}"
 				};
@@ -225,7 +225,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 			{
 				var isFileUpload = 
 					(s.Format ?? s.Items?.Format)?.Equals("binary", StringComparison.InvariantCultureIgnoreCase) == true
-					|| (s.Type == "object" && (s.Properties?.Any(p => p.Value.Format == "binary") ?? false)); // todo: use .Equals() ??
+					|| (s.Type == JsonSchemaType.Object && (s.Properties?.Any(p => p.Value.Format == "binary") ?? false)); // todo: use .Equals() ??
 				formNames = s.Properties?
 					.Where(p => p.Value.Format?.Equals("binary", StringComparison.InvariantCultureIgnoreCase) == true)
 					.Select(p => p.Key)

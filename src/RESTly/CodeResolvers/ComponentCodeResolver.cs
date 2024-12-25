@@ -2,7 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Text;
-using Microsoft.OpenApi.Any;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.OpenApi.Models;
 
 namespace Restly.CodeResolvers;
@@ -42,23 +43,25 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 
 		return enumCodeBuilder.ToString();
 
-		string? ResolveEnumValue(IOpenApiAny enumValue)
+		string? ResolveEnumValue(JsonNode enumValue)
 		{
-			var (enumMemberValue, realValue) = enumValue switch
+			var kind = enumValue.GetValueKind();
+			var (enumValueCode, realValueString) = kind switch
 			{
-				OpenApiInteger oaEnumInteger => ($"{"\t\t"}Value{oaEnumInteger.Value} = {oaEnumInteger.Value}", oaEnumInteger.Value.ToString()),
-				OpenApiString  oaEnumString1 when int.TryParse(oaEnumString1.Value, out var intFromString)
-					=> ($"{"\t\t"}Value{intFromString} = {intFromString}", oaEnumString1.Value),
-				OpenApiString  oaEnumString2  => ($"{"\t\t"}{oaEnumString2.Value.NormalizeCsName()}", oaEnumString2.Value),
-				_                            => (null, null) // currently returns null; todo: give diagnostics info
+				JsonValueKind.Number
+					=> ($"{"\t\t"}Value{enumValue.GetValue<int>()} = {enumValue.GetValue<int>()}", enumValue.GetValue<int>().ToString()),
+				JsonValueKind.String when int.TryParse(enumValue.GetValue<string>(), out var intFromString)
+					=> ($"{"\t\t"}Value{intFromString} = {intFromString}", enumValue.GetValue<string>()),
+				JsonValueKind.String
+					=> ($"{"\t\t"}{enumValue.GetValue<string>().NormalizeCsName()}", enumValue.GetValue<string>()),
+				JsonValueKind.Null
+					=> ($"{"\t\t"}Null", null),
+				_   => ($"{"\t\t"}{enumValue.ToJsonString().NormalizeCsName()}", enumValue.ToJsonString())
 			};
-
-			if (enumMemberValue == null)
-				return null;
-			if (enumMemberValue.Trim() == realValue)
-				return enumMemberValue;
-
-			return $"{"\t\t"}[JsonStringEnumMemberName(\"{realValue}\")]\n{enumMemberValue}";
+			
+			return enumValueCode.Trim() == realValueString 
+				? enumValueCode 
+				: $"{"\t\t"}[JsonStringEnumMemberName(\"{realValueString}\")]\n{enumValueCode}";
 		}
 	}
 
@@ -79,7 +82,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			.ToArray() ?? [];
 		
 		var propertyPrefix = modelProperties.Length > 1 ? "\n\t\t" : string.Empty;
-		var inheritanceCode = baseModel?.Type == "object"
+		var inheritanceCode = baseModel?.Type == JsonSchemaType.Object
 			? $"\n\t: {baseModel.Reference.Id.NormalizeCsName()}({string.Join(", ", baseModel.Properties.Select(p => GeneratePropertyName(p.Key)))})"
 			: null;
 
@@ -113,7 +116,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 		foreach (var property in _schema.Properties.Where(p => IsSubModel(p.Value)))
 		{
 			var subModelName = GenerateSubModelName(property.Key);
-			var subModelSchema = property.Value.Type == "array"
+			var subModelSchema = property.Value.Type == JsonSchemaType.Array
 				? property.Value.Items
 				: property.Value;
 			var codeResolver = new ComponentCodeResolver(subModelName, subModelSchema);
@@ -128,8 +131,8 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 	private string GenerateSubModelName(string schemaName) => $"{_modelTypeName}{schemaName.Capitalize()}".NormalizeCsName();
 
 	private static bool IsSubModel(OpenApiSchema schema) => 
-		schema is { Type: "object", Reference: null } 
-			   or { Type: "array", Items: { Type: "object", Reference: null } };
+		schema is { Type: JsonSchemaType.Object, Reference: null } 
+			   or { Type: JsonSchemaType.Array, Items: { Type: JsonSchemaType.Object, Reference: null } };
 
 	private string GeneratePropertyName(string schemaName)
 	{
@@ -144,7 +147,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 		var propertyName = GeneratePropertyName(property.Key);
 
 		var propertyType = IsSubModel(property.Value)
-			? $"{GenerateSubModelName(property.Key)}{(property.Value.Type == "array" ? "[]" : string.Empty)}"
+			? $"{GenerateSubModelName(property.Key)}{(property.Value.Type == JsonSchemaType.Array ? "[]" : string.Empty)}"
 			: property.Value.ToCsType();
 
 		var jsonPropertyName = withJsonAnnotation
