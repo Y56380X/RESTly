@@ -14,5 +14,5 @@ internal static class StringExtensions
 		: s;
 	
 	public static string NormalizeCsName(this string typeName, bool capitalizeFirst = true) => string.Concat(
-		typeName.Split('-', '_', '.', ' ').Select((f, i) => !capitalizeFirst && i == 0 ? Lowerize(f) : Capitalize(f)));
+		typeName.Split('-', '_', '.', ' ', '/', '\\').Select((f, i) => !capitalizeFirst && i == 0 ? Lowerize(f) : Capitalize(f)));
 }
