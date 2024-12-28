@@ -37,8 +37,20 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 		var clientDefinitions = attributes.Select(a => (
 			Definition: a.ConstructorArguments[0].Value as string, 
 			Name      : a.ConstructorArguments[1].Value as string));
-		foreach (var (clientDefinition, clientName) in clientDefinitions) 
-			AddApiClient(context, additionalTexts, clientDefinition, clientName);
+		foreach (var (clientDefinition, clientName) in clientDefinitions)
+		{
+			try
+			{
+				AddApiClient(context, additionalTexts, clientDefinition, clientName);
+			}
+			catch
+			{
+				var errorDiagnostics = Diagnostic.Create(new DiagnosticDescriptor(
+					"RLY1000", "Error", $"Error during '{clientName}' client generation.", "Error", DiagnosticSeverity.Error, true), 
+					null);
+				context.ReportDiagnostic(errorDiagnostics);
+			}
+		}
 	}
 
 	private static void AddApiClient(
