@@ -5,7 +5,9 @@ using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Reader;
 using Microsoft.OpenApi.Readers;
 using Restly.CodeResolvers;
 
@@ -35,26 +37,42 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 		var clientDefinitions = attributes.Select(a => (
 			Definition: a.ConstructorArguments[0].Value as string, 
 			Name      : a.ConstructorArguments[1].Value as string));
-		foreach (var (clientDefinition, clientName) in clientDefinitions)
+		foreach (var (clientDefinition, clientName) in clientDefinitions) 
+			AddApiClient(context, additionalTexts, clientDefinition, clientName);
+	}
+
+	private static void AddApiClient(
+		SourceProductionContext context, ImmutableArray<AdditionalText> additionalTexts,
+		string? clientDefinition, string? clientName)
+	{
+		if (string.IsNullOrWhiteSpace(clientDefinition) || string.IsNullOrWhiteSpace(clientName))
+			return; // todo: write analyzer message
+
+		var definitionFile = additionalTexts.SingleOrDefault(a => a.Path.EndsWith(clientDefinition));
+		if (definitionFile == null)
+			return; // todo: write analyzer message
+
+		var definitionContent = definitionFile.GetText()!.ToString();
+		var extension = Path.GetExtension(clientDefinition);
+		IOpenApiReader openApiReader = extension.Trim().ToLower() switch
 		{
-			if (string.IsNullOrWhiteSpace(clientDefinition) || string.IsNullOrWhiteSpace(clientName))
-				return; // todo: write analyzer message
-
-			var definitionFile = additionalTexts.SingleOrDefault(a => a.Path.EndsWith(clientDefinition));
-			if (definitionFile == null)
-				return; // todo: write analyzer message
-
-			var definitionContent = definitionFile.GetText()!.ToString();
-			var openApiReader = new OpenApiStringReader(new OpenApiReaderSettings
-			{
-				ReferenceResolution = ReferenceResolutionSetting.ResolveLocalReferences,
-				LoadExternalRefs = false
-			});
-			var apiSpecification = openApiReader.Read(definitionContent, out _);
-			apiSpecification.Info.Title = clientName;
-			var apiClientCode = GenerateApiClientCode(apiSpecification);
-			context.AddSource($"{clientName}.g.cs", SourceText.From(apiClientCode, Encoding.UTF8));
-		}
+			".json"           => new OpenApiJsonReader(),
+			".yaml" or ".yml" => new OpenApiYamlReader(),
+			_ => throw new ArgumentOutOfRangeException()
+		};
+		using var stream = new MemoryStream(Encoding.UTF8.GetBytes(definitionContent));
+		var readResult = openApiReader.Read(stream, new OpenApiReaderSettings
+		{
+			ReferenceResolution = ReferenceResolutionSetting.ResolveLocalReferences,
+			LoadExternalRefs = false
+		});
+			
+		if (readResult.Document is not {} apiSpecification)
+			return;
+			
+		apiSpecification.Info.Title = clientName;
+		var apiClientCode = GenerateApiClientCode(apiSpecification);
+		context.AddSource($"{clientName}.g.cs", SourceText.From(apiClientCode, Encoding.UTF8));
 	}
 
 	private static string GenerateApiClientCode(OpenApiDocument apiSpecification)
