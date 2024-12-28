@@ -60,7 +60,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 	private string GenerateCallCode(string pathTemplate, OperationType operationType, 
 		OpenApiOperation operation, RequestDefinition? request, OpenApiMediaType? response)
 	{
-		var parameters = operation.Parameters.ToArray();
+		var parameters = operation.Parameters?.ToArray() ?? [];
 		var operationId = operation.OperationId;
 		
 		var methodName = GenerateMethodName();
@@ -124,13 +124,14 @@ internal class EndpointCodeResolver : CodeResolverBase
 		}
 		
 		callCodeBuilder.AppendLine($"{"\t\t"}using var response = await _httpClient.SendAsync(request, cancellationToken);");
+		var modelVariable = parameters.Any(p => p.Name == "model") ? "responseModel" : "model";
 		if (response is { Schema: not null } && operationType is not OperationType.Head)
 		{
-			callCodeBuilder.AppendLine($"{"\t\t"}{response.Schema.ToCsType(out _, generateResponseModelType, forceNullable: true)} model;");
+			callCodeBuilder.AppendLine($"{"\t\t"}{response.Schema.ToCsType(out _, generateResponseModelType, forceNullable: true)} {modelVariable};");
 			callCodeBuilder.AppendLine($"{"\t\t"}if (response.IsSuccessStatusCode)");
-			callCodeBuilder.AppendLine($"{"\t\t\t"}model = JsonSerializer.Deserialize<{response.Schema.ToCsType(out _, generateResponseModelType)}>(await response.Content.ReadAsStreamAsync(cancellationToken), _jsonOptions);");
+			callCodeBuilder.AppendLine($"{"\t\t\t"}{modelVariable} = JsonSerializer.Deserialize<{response.Schema.ToCsType(out _, generateResponseModelType)}>(await response.Content.ReadAsStreamAsync(cancellationToken), _jsonOptions);");
 			callCodeBuilder.AppendLine($"{"\t\t"}else");
-			callCodeBuilder.AppendLine($"{"\t\t\t"}model = default;");
+			callCodeBuilder.AppendLine($"{"\t\t\t"}{modelVariable} = default;");
 		}
 		
 		var responseArguments = new List<string>
@@ -139,7 +140,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 			"response.StatusCode"
 		};
 		if (response is { Schema: not null } && operationType is not OperationType.Head)
-			responseArguments.Add("model");
+			responseArguments.Add(modelVariable);
 		
 		var methodCode = 
 			$$"""
