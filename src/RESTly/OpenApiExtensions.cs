@@ -39,7 +39,10 @@ internal static class OpenApiExtensions
 			_         when schema.Reference is {} reference
                            && ResolveReferenceSchema(reference) is {} referenceSchema
                            && !referenceSchema.Properties.Any()
-				                                             => ResolveReferenceSchema(reference)?.ToCsType(out generate, generatedName, forceNullable, stop - 1) ?? reference.Id.NormalizeCsName(),
+																// use reference schema id as type name, when it exists and is an `AllOf` schema
+				                                             => referenceSchema.Type != null || (referenceSchema.AllOf?.Any() ?? false) == false || referenceSchema.Id == null
+					                                             ? referenceSchema.ToCsType(out generate, generatedName, forceNullable, stop - 1) 
+					                                             : reference.Id.NormalizeCsName(),
 			_         when schema.Reference is {} reference  => reference.Id.NormalizeCsName(),
 			_		  when schema.OneOf 
 				           is { Count: > 0 } oneOf           => ResolveOneOf(oneOf),
