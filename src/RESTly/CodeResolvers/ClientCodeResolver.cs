@@ -16,11 +16,14 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 
 	protected override string Resolve()
 	{
+		var generatedMethodNames = new List<string>();
+		
 		// Generate REST call methods for API client
 		// Endpoint code resolver writes to the _apiSpecification.Components
 		// => this has to be done before generating the components code 
 		var callsCode = _apiSpecification.Paths
-			.Select(path => new EndpointCodeResolver(path.Key, path.Value, _apiSpecification.Components))
+			.OrderBy(path => path.Key)
+			.Select(path => new EndpointCodeResolver(path.Key, path.Value, _apiSpecification.Components, generatedMethodNames))
 			.Select(ecr => ecr.GeneratedCode)
 			.Where(c => !string.IsNullOrWhiteSpace(c));
 

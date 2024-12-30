@@ -21,14 +21,16 @@ internal class EndpointCodeResolver : CodeResolverBase
 		};
 
 	private readonly OpenApiComponents _components;
+	private readonly List<string> _generatedMethodNames;
 	private readonly OpenApiPathItem _pathItem;
 	private readonly string _pathTemplate;
 
-	public EndpointCodeResolver(string pathTemplate, OpenApiPathItem pathItem, OpenApiComponents components)
+	public EndpointCodeResolver(string pathTemplate, OpenApiPathItem pathItem, OpenApiComponents components, List<string> generatedMethodNames)
 	{
 		_pathTemplate = pathTemplate;
 		_pathItem = pathItem;
 		_components = components;
+		_generatedMethodNames = generatedMethodNames;
 	}
 	
 	protected override string Resolve()
@@ -64,6 +66,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		var operationId = operation.OperationId;
 		
 		var methodName = GenerateMethodName();
+		_generatedMethodNames.Add(methodName);
 		var methodArguments = parameters
 			.Select(GenerateMethodArgumentCode)
 			.ToList();
@@ -180,12 +183,32 @@ internal class EndpointCodeResolver : CodeResolverBase
 				return operationMethodName.NormalizeCsName();
 			}
 			
-			// build method name based on path template
-			var methodFragments = pathTemplate
+			var methodFragments = new List<string?>();
+			var pathFragments = pathTemplate
 				.Split([' ', '/', '\\', '-', '_', '.', ':', '{', '}', '(', ')', '[', ']'], StringSplitOptions.RemoveEmptyEntries)
-				.Select(f => f.Capitalize());
+				.Select(f => f.Capitalize())
+				.ToArray();
+			var requestSchemaName = request?.RequestType.Schema?.Title?.NormalizeCsName();
+			var responseSchemaName = response?.Schema?.Title?.NormalizeCsName();
+			methodFragments.Add(requestSchemaName ?? responseSchemaName ?? pathFragments.FirstOrDefault());
+			if (pathFragments.LastOrDefault(f => operation.Parameters?.All(p => !p.Name.Equals(f, StringComparison.OrdinalIgnoreCase)) ?? true) is { } lastFragment
+			    && lastFragment != methodFragments.LastOrDefault())
+			{
+				methodFragments.Add(lastFragment.NormalizeCsName());
+			}
+
+			if (operation.Parameters?.Any() == true)
+			{
+				methodFragments.Add(operationType is OperationType.Get or OperationType.Head ? "By" : "With");
+				methodFragments.AddRange(operation.Parameters.Select((p, i) => $"{(i == 0 ? null : "And")}{p.Name.NormalizeCsName()}"));
+			}
+
+			var generatedMethodNameBase = $"{operationType}{string.Concat(methodFragments)}";
+			int? appendix = null;
+			while (_generatedMethodNames.Contains($"{generatedMethodNameBase}{appendix}Async"))
+				appendix = (appendix ?? 1) + 1;
 			
-			return $"{operationType}{string.Concat(methodFragments)}Async"; // todo: generate better methods names (take response and parameters into account)
+			return $"{operationType}{string.Concat(methodFragments)}{appendix}Async";
 		}
 
 		string GenerateMethodArgumentCode(OpenApiParameter parameter) => 
