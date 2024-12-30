@@ -1,12 +1,17 @@
-﻿using Microsoft.OpenApi.Readers;
+﻿using Microsoft.OpenApi.Reader;
+using Microsoft.OpenApi.Readers;
 
-var openApiReader = new OpenApiStringReader(new OpenApiReaderSettings
-{
-	ReferenceResolution = ReferenceResolutionSetting.ResolveLocalReferences,
-	LoadExternalRefs = false
-});
-var document = openApiReader.Read(File.ReadAllText("simple-api.yaml"), out _);
+var openApiReader = new OpenApiYamlReader();
+var fileText = File.ReadAllText("./simple-api.yaml");
+using var memory = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(fileText));
+var readResult = await openApiReader.ReadAsync(
+	memory,
+	new OpenApiReaderSettings
+	{
+		ReferenceResolution = ReferenceResolutionSetting.ResolveLocalReferences,
+		LoadExternalRefs = false
+	});
 
-var clientCodeResolver = new Restly.CodeResolvers.ClientCodeResolver(document);
+var clientCodeResolver = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document);
 
 Console.WriteLine(clientCodeResolver.GeneratedCode);
