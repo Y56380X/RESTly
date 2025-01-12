@@ -183,32 +183,35 @@ internal class EndpointCodeResolver : CodeResolverBase
 				return operationMethodName.NormalizeCsName();
 			}
 			
-			var methodFragments = new List<string?>();
-			var pathFragments = pathTemplate
-				.Split([' ', '/', '\\', '-', '_', '.', ':', '{', '}', '(', ')', '[', ']'], StringSplitOptions.RemoveEmptyEntries)
-				.Select(f => f.Capitalize())
+			// build method name by path template and response type
+			var descriptiveFragments = pathTemplate
+				.Split(['/'], StringSplitOptions.RemoveEmptyEntries)
+				.Where(f => !f.StartsWith("{") && !f.EndsWith("}"))
 				.ToArray();
-			var requestSchemaName = request?.RequestType.Schema?.Title?.NormalizeCsName();
-			var responseSchemaName = response?.Schema?.Title?.NormalizeCsName();
-			methodFragments.Add(requestSchemaName ?? responseSchemaName ?? pathFragments.FirstOrDefault());
-			if (pathFragments.LastOrDefault(f => operation.Parameters?.All(p => !p.Name.Equals(f, StringComparison.OrdinalIgnoreCase)) ?? true) is { } lastFragment
-			    && lastFragment != methodFragments.LastOrDefault())
+			
+			// select method name fragments
+			var methodNameFragments = new List<string?>();
+			methodNameFragments.Add(descriptiveFragments.LastOrDefault()?.NormalizeCsName());
+			if (descriptiveFragments.Length > 1)
 			{
-				methodFragments.Add(lastFragment.NormalizeCsName());
+				methodNameFragments.Add("Of");
+				methodNameFragments.AddRange(descriptiveFragments.Take(descriptiveFragments.Length - 1).Select(f => f.NormalizeCsName()));
 			}
-
+			
+			// append with/by name extension by given operation parameters
 			if (operation.Parameters?.Any() == true)
 			{
-				methodFragments.Add(operationType is OperationType.Get or OperationType.Head ? "By" : "With");
-				methodFragments.AddRange(operation.Parameters.Select((p, i) => $"{(i == 0 ? null : "And")}{p.Name.NormalizeCsName()}"));
+				methodNameFragments.Add(operationType is OperationType.Get or OperationType.Head ? "By" : "With");
+				methodNameFragments.AddRange(operation.Parameters.Select((p, i) => $"{(i == 0 ? null : "And")}{p.Name.NormalizeCsName()}"));
 			}
-
-			var generatedMethodNameBase = $"{operationType}{string.Concat(methodFragments)}";
+			
+			// generate iterated appendix when generated name is already existing
+			var generatedMethodNameBase = $"{operationType}{string.Concat(methodNameFragments.Where(f => !string.IsNullOrWhiteSpace(f)))}";
 			int? appendix = null;
 			while (_generatedMethodNames.Contains($"{generatedMethodNameBase}{appendix}Async"))
 				appendix = (appendix ?? 1) + 1;
 			
-			return $"{operationType}{string.Concat(methodFragments)}{appendix}Async";
+			return $"{generatedMethodNameBase}{appendix}Async";
 		}
 
 		string GenerateMethodArgumentCode(OpenApiParameter parameter) => 
