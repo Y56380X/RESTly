@@ -74,6 +74,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			.ToArray();
 		var modelPropertyCodeFragments = modelProperties
 			// only properties outside the base class should be JSON annotated
+			.OrderBy(p => HasImplementableDefault(p.Value, out _) ? 1 : -1)
 			.Select(p => GeneratePropertyCode(p, baseModel?.Properties.ContainsKey(p.Key) != true))
 			.ToArray();
 
@@ -141,6 +142,28 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			? $"{normalizedPropertyName}_"
 			: normalizedPropertyName;
 	}
+
+	private static bool HasImplementableDefault(OpenApiSchema schema, out string? defaultValue)
+	{
+		if (schema.Default == null)
+		{
+			defaultValue = null;
+			return false;
+		}
+
+		switch (schema.ToCsType().TrimEnd('?'))
+		{
+			case "string":
+				defaultValue = $"\"{schema.Default}\"";
+				return true;
+			case "int":
+				defaultValue = schema.Default.ToString();
+				return true;
+			default:
+				defaultValue = null;
+				return false;
+		}
+	}
 	
 	private string GeneratePropertyCode(KeyValuePair<string, OpenApiSchema> property, bool withJsonAnnotation)
 	{
@@ -153,7 +176,11 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 		var jsonPropertyName = withJsonAnnotation
 			? $"[property:JsonPropertyName(\"{property.Key}\")]"
 			: null;
+
+		var setDefault = HasImplementableDefault(property.Value, out var defaultValue)
+			? $" = {defaultValue}"
+			: null;
 		
-		return $"{jsonPropertyName}{propertyType} {propertyName}";
+		return $"{jsonPropertyName}{propertyType} {propertyName}{setDefault}";
 	}
 }
