@@ -11,11 +11,13 @@ namespace Restly.CodeResolvers;
 internal sealed class ComponentCodeResolver : CodeResolverBase
 {
 	private readonly string _modelTypeName;
+	private readonly OpenApiDocument _document;
 	private readonly OpenApiSchema _schema;
 
-	public ComponentCodeResolver(string modelTypeName, OpenApiSchema schema)
+	public ComponentCodeResolver(OpenApiDocument document, string modelTypeName, OpenApiSchema schema)
 	{
 		_modelTypeName = modelTypeName.NormalizeCsName();
+		_document = document;
 		_schema = schema;
 	}
 
@@ -78,8 +80,8 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			.Select(p => GeneratePropertyCode(p, baseModel?.Properties.ContainsKey(p.Key) != true))
 			.ToArray();
 
-		var derivedTypes = _schema.Reference?.HostDocument?.Components.Schemas
-			.Where(s1 => s1.Value.AllOf.Any(s2 => s2.Equals(_schema)))
+		var derivedTypes = _document.Components?.Schemas?
+			.Where(s1 => s1.Value.AllOf.Any(s2 => s2.Reference?.Id.Equals(_modelTypeName) ?? false))
 			.ToArray() ?? [];
 		
 		var propertyPrefix = modelProperties.Length > 1 ? "\n\t\t" : string.Empty;
@@ -120,7 +122,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			var subModelSchema = property.Value.Type == JsonSchemaType.Array
 				? property.Value.Items
 				: property.Value;
-			var codeResolver = new ComponentCodeResolver(subModelName, subModelSchema);
+			var codeResolver = new ComponentCodeResolver(_document, subModelName, subModelSchema);
 			modelCodeBuilder.AppendLine();
 			modelCodeBuilder.AppendLine();
 			modelCodeBuilder.Append(codeResolver.Resolve());

@@ -29,7 +29,7 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 
 		// Generate request and response models code
 		var modelsCode = _apiSpecification.Components.Schemas
-			.Select(schema => new ComponentCodeResolver(schema.Key, schema.Value))
+			.Select(schema => new ComponentCodeResolver(_apiSpecification, schema.Key, schema.Value))
 			.Select(mcr => mcr.GeneratedCode);
 		
 		var clientClassName = _apiSpecification.Info.Title.Split('.').Last().NormalizeCsName();
