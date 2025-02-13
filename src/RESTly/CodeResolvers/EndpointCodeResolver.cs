@@ -23,13 +23,15 @@ internal class EndpointCodeResolver : CodeResolverBase
 	private readonly OpenApiComponents _components;
 	private readonly List<string> _generatedMethodNames;
 	private readonly OpenApiPathItem _pathItem;
+	private readonly OpenApiDocument _document;
 	private readonly string _pathTemplate;
 
-	public EndpointCodeResolver(string pathTemplate, OpenApiPathItem pathItem, OpenApiComponents components, List<string> generatedMethodNames)
+	public EndpointCodeResolver(string pathTemplate, OpenApiPathItem pathItem, OpenApiDocument document, List<string> generatedMethodNames)
 	{
 		_pathTemplate = pathTemplate;
 		_pathItem = pathItem;
-		_components = components;
+		_document = document;
+		_components = document.Components ?? new OpenApiComponents();
 		_generatedMethodNames = generatedMethodNames;
 	}
 	
@@ -75,7 +77,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		if (response is { Schema: not null } && operationType is not OperationType.Head)
 		{
 			var responseModelName = $"{methodName.Substring(0, methodName.Length - "Async".Length)}Result";
-			var modelType = response.Schema.ToCsType(out var generate, responseModelName, forceNullable: true);
+			var modelType = response.Schema.ToCsType(_document, out var generate, responseModelName, forceNullable: true);
 			responseType = $"Response<{modelType}>";
 			generateResponseModelType = generate ? responseModelName : null;
 		}
@@ -117,7 +119,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		else if (request is { RequestType.Schema: not null })
 		{
 			var bodyTypeName = $"{methodName.Substring(0, methodName.Length - "Async".Length)}Body";
-			methodArguments.Insert(0, $"{request.Value.RequestType.Schema.ToCsType(out var generate, bodyTypeName)} body");
+			methodArguments.Insert(0, $"{request.Value.RequestType.Schema.ToCsType(_document, out var generate, bodyTypeName)} body");
 			callCodeBuilder.AppendLine($"{"\t\t"}request.Content = JsonContent.Create(body, options: _jsonOptions);");
 			generateRequestModelType = generate ? bodyTypeName : null;
 		}
@@ -130,9 +132,9 @@ internal class EndpointCodeResolver : CodeResolverBase
 		var modelVariable = parameters.Any(p => p.Name == "model") ? "responseModel" : "model";
 		if (response is { Schema: not null } && operationType is not OperationType.Head)
 		{
-			callCodeBuilder.AppendLine($"{"\t\t"}{response.Schema.ToCsType(out _, generateResponseModelType, forceNullable: true)} {modelVariable};");
+			callCodeBuilder.AppendLine($"{"\t\t"}{response.Schema.ToCsType(_document, out _, generateResponseModelType, forceNullable: true)} {modelVariable};");
 			callCodeBuilder.AppendLine($"{"\t\t"}if (response.IsSuccessStatusCode)");
-			callCodeBuilder.AppendLine($"{"\t\t\t"}{modelVariable} = JsonSerializer.Deserialize<{response.Schema.ToCsType(out _, generateResponseModelType)}>(await response.Content.ReadAsStreamAsync(cancellationToken), _jsonOptions);");
+			callCodeBuilder.AppendLine($"{"\t\t\t"}{modelVariable} = JsonSerializer.Deserialize<{response.Schema.ToCsType(_document, out _, generateResponseModelType)}>(await response.Content.ReadAsStreamAsync(cancellationToken), _jsonOptions);");
 			callCodeBuilder.AppendLine($"{"\t\t"}else");
 			callCodeBuilder.AppendLine($"{"\t\t\t"}{modelVariable} = default;");
 		}
@@ -215,7 +217,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		}
 
 		string GenerateMethodArgumentCode(OpenApiParameter parameter) => 
-			$"{parameter.Schema.ToCsType()} {parameter.Name.NormalizeCsName(false)}";
+			$"{parameter.Schema.ToCsType(_document)} {parameter.Name.NormalizeCsName(false)}";
 
 		string GeneratePreparedPathTemplate()
 		{

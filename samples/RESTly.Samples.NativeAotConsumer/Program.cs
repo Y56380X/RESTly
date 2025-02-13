@@ -43,10 +43,10 @@ Console.WriteLine(uploadMultipleResult);
 using var fileUpload3 = new MemoryStream([100, 100, 200]);
 using var fileUpload4 = new MemoryStream([100, 100, 200, 100, 100, 200]);
 using var fileUpload5 = new MemoryStream([100, 100, 200, 100, 100, 200, 100, 100, 200]);
-var uploadCollectionResult = await simpleApi.PostUploadCollectionAsync([
-	(fileUpload3, "some_file_3.txt"),
-	(fileUpload4, "some_file_4.txt"),
-	(fileUpload5, "some_file_5.txt")]);
+var uploadCollectionResult = await simpleApi.PostUploadCollectionAsync(new SimpleApi.PostUploadCollectionBody([
+	Convert.ToBase64String(fileUpload3.ToArray()),
+	Convert.ToBase64String(fileUpload4.ToArray()),
+	Convert.ToBase64String(fileUpload5.ToArray())]));
 Console.WriteLine(uploadCollectionResult);
 
 var floors = await simpleApi.GetFloorsAsync();
@@ -62,8 +62,9 @@ foreach (var polyItem in polyItems2.Model ?? [])
 	Console.WriteLine(polyItem);
 
 [JsonSerializable(typeof(SimpleApi.WeatherForecast[]))]
-[JsonSerializable(typeof(SimpleApi.FloorItem[]))]
+[JsonSerializable(typeof(SimpleApi.SomeBaseItem[]))]
 [JsonSerializable(typeof(SimpleApi.SomeTypeBase[]))]
+[JsonSerializable(typeof(SimpleApi.PostUploadCollectionBody[]))]
 [JsonSerializable(typeof(IDictionary<string, int>))]
 [JsonSerializable(typeof(byte[]))]
 [JsonSerializable(typeof(string[]))]

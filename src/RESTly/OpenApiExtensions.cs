@@ -9,7 +9,7 @@ internal static class OpenApiExtensions
 {
 	private const int RecursionDepthLimit = 1; // todo: adjust max recursion depth and loop detection
 	
-	public static string ToCsType(this OpenApiSchema schema, out bool generate, string? generatedName = null, bool forceNullable = false, int stop = RecursionDepthLimit)
+	public static string ToCsType(this OpenApiSchema schema, OpenApiDocument document, out bool generate, string? generatedName = null, bool forceNullable = false, int stop = RecursionDepthLimit)
 	{
 		if (stop <= 0)
 		{
@@ -33,15 +33,15 @@ internal static class OpenApiExtensions
 			JsonSchemaType.Number  when schema is { Format: "float" }     => "float",
 			JsonSchemaType.Number                                         => "double",
 			JsonSchemaType.Boolean                                        => "bool",
-			JsonSchemaType.Array                                          => $"{schema.Items?.ToCsType(out generate, generatedName, false, stop) ?? "object"}[]",
+			JsonSchemaType.Array                                          => $"{schema.Items?.ToCsType(document, out generate, generatedName, false, stop) ?? "object"}[]",
 			JsonSchemaType.Object  when schema.AdditionalProperties 
-					       is {} propertiesSchema            => $"IDictionary<string, {propertiesSchema.ToCsType(out generate, generatedName, stop: stop)}>",
+					       is {} propertiesSchema            => $"IDictionary<string, {propertiesSchema.ToCsType(document, out generate, generatedName, stop: stop)}>",
 			_         when schema.Reference is {} reference
                            && ResolveReferenceSchema(reference) is {} referenceSchema
                            && !referenceSchema.Properties.Any()
 																// use reference schema id as type name, when it exists and is an `AllOf` schema
 				                                             => referenceSchema.Type != null || (referenceSchema.AllOf?.Any() ?? false) == false || referenceSchema.Id == null
-					                                             ? referenceSchema.ToCsType(out generate, generatedName, forceNullable, stop - 1) 
+					                                             ? referenceSchema.ToCsType(document, out generate, generatedName, forceNullable, stop - 1) 
 					                                             : reference.Id.NormalizeCsName(),
 			_         when schema.Reference is {} reference  => reference.Id.NormalizeCsName(),
 			_		  when schema.OneOf 
@@ -62,7 +62,7 @@ internal static class OpenApiExtensions
 			var typeCandidates = anyOf.Where(s => s.Type != JsonSchemaType.Null).ToArray();
 			
 			return typeCandidates.Length == 1 // NOTE: currently just resolve when there is just one other type than `null`
-				? typeCandidates.Single().ToCsType(out _, forceNullable: possiblyNullable)
+				? typeCandidates.Single().ToCsType(document, out _, forceNullable: possiblyNullable)
 				: "object";
 		}
 
@@ -82,11 +82,11 @@ internal static class OpenApiExtensions
 		}
 
 		OpenApiSchema? ResolveReferenceSchema(OpenApiReference reference) =>
-			reference.HostDocument?.Components.Schemas.TryGetValue(reference.Id, out var referenceSchema) ?? false
+			document.Components?.Schemas?.TryGetValue(reference.Id, out var referenceSchema) ?? false
 				? referenceSchema
 				: null;
 	}
 	
-	public static string ToCsType(this OpenApiSchema schema, bool forceNullable = false) => 
-		ToCsType(schema, out _, forceNullable: forceNullable);
+	public static string ToCsType(this OpenApiSchema schema, OpenApiDocument document, bool forceNullable = false) => 
+		ToCsType(schema, document, out _, forceNullable: forceNullable);
 }

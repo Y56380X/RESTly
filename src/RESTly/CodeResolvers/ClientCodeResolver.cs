@@ -23,7 +23,7 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 		// => this has to be done before generating the components code 
 		var callsCode = _apiSpecification.Paths
 			.OrderBy(path => path.Key)
-			.Select(path => new EndpointCodeResolver(path.Key, path.Value, _apiSpecification.Components, generatedMethodNames))
+			.Select(path => new EndpointCodeResolver(path.Key, path.Value, _apiSpecification, generatedMethodNames))
 			.Select(ecr => ecr.GeneratedCode)
 			.Where(c => !string.IsNullOrWhiteSpace(c));
 

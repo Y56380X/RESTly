@@ -145,7 +145,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			: normalizedPropertyName;
 	}
 
-	private static bool HasImplementableDefault(OpenApiSchema schema, out string? defaultValue)
+	private bool HasImplementableDefault(OpenApiSchema schema, out string? defaultValue)
 	{
 		if (schema.Default == null)
 		{
@@ -153,7 +153,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			return false;
 		}
 
-		switch (schema.ToCsType().TrimEnd('?'))
+		switch (schema.ToCsType(_document).TrimEnd('?'))
 		{
 			case "string":
 				defaultValue = $"\"{schema.Default}\"";
@@ -173,7 +173,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 
 		var propertyType = IsSubModel(property.Value)
 			? $"{GenerateSubModelName(property.Key)}{(property.Value.Type == JsonSchemaType.Array ? "[]" : string.Empty)}"
-			: property.Value.ToCsType();
+			: property.Value.ToCsType(_document);
 
 		var jsonPropertyName = withJsonAnnotation
 			? $"[property:JsonPropertyName(\"{property.Key}\")]"
