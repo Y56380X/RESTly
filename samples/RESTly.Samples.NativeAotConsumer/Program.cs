@@ -43,7 +43,7 @@ Console.WriteLine(uploadMultipleResult);
 using var fileUpload3 = new MemoryStream([100, 100, 200]);
 using var fileUpload4 = new MemoryStream([100, 100, 200, 100, 100, 200]);
 using var fileUpload5 = new MemoryStream([100, 100, 200, 100, 100, 200, 100, 100, 200]);
-var uploadCollectionResult = await simpleApi.PostUploadCollectionAsync(new SimpleApi.PostUploadCollectionBody([
+var uploadCollectionResult = await simpleApi.PostUploadCollectionAsync(new ISimpleApi.PostUploadCollectionBody([
 	Convert.ToBase64String(fileUpload3.ToArray()),
 	Convert.ToBase64String(fileUpload4.ToArray()),
 	Convert.ToBase64String(fileUpload5.ToArray())]));
@@ -55,16 +55,16 @@ Console.WriteLine(floors.Model?.FirstOrDefault());
 var polyItems1 = await simpleApi.GetDerivedTypesAsync();
 foreach (var polyItem in polyItems1.Model ?? [])
 	Console.WriteLine(polyItem);
-await simpleApi.PostDerivedTypesAsync(new SimpleApi.FinalType1("Name1", 100));
-await simpleApi.PostDerivedTypesAsync(new SimpleApi.FinalType2("Name1", 0.1d, 200d));
+await simpleApi.PostDerivedTypesAsync(new ISimpleApi.FinalType1("Name1", 100));
+await simpleApi.PostDerivedTypesAsync(new ISimpleApi.FinalType2("Name1", 0.1d, 200d));
 var polyItems2 = await simpleApi.GetDerivedTypesAsync();
 foreach (var polyItem in polyItems2.Model ?? [])
 	Console.WriteLine(polyItem);
 
-[JsonSerializable(typeof(SimpleApi.WeatherForecast[]))]
-[JsonSerializable(typeof(SimpleApi.SomeBaseItem[]))]
-[JsonSerializable(typeof(SimpleApi.SomeTypeBase[]))]
-[JsonSerializable(typeof(SimpleApi.PostUploadCollectionBody[]))]
+[JsonSerializable(typeof(ISimpleApi.WeatherForecast[]))]
+[JsonSerializable(typeof(ISimpleApi.SomeBaseItem[]))]
+[JsonSerializable(typeof(ISimpleApi.SomeTypeBase[]))]
+[JsonSerializable(typeof(ISimpleApi.PostUploadCollectionBody[]))]
 [JsonSerializable(typeof(IDictionary<string, int>))]
 [JsonSerializable(typeof(byte[]))]
 [JsonSerializable(typeof(string[]))]
