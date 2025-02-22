@@ -22,17 +22,24 @@ internal class EndpointCodeResolver : CodeResolverBase
 
 	private readonly OpenApiComponents _components;
 	private readonly List<string> _generatedMethodNames;
+	private readonly List<string> _generatedMethodDeclarations;
 	private readonly OpenApiPathItem _pathItem;
 	private readonly OpenApiDocument _document;
 	private readonly string _pathTemplate;
 
-	public EndpointCodeResolver(string pathTemplate, OpenApiPathItem pathItem, OpenApiDocument document, List<string> generatedMethodNames)
+	public EndpointCodeResolver(
+		string pathTemplate, 
+		OpenApiPathItem pathItem, 
+		OpenApiDocument document, 
+		List<string> generatedMethodNames,
+		List<string> generatedMethodDeclarations)
 	{
 		_pathTemplate = pathTemplate;
 		_pathItem = pathItem;
 		_document = document;
 		_components = document.Components ?? new OpenApiComponents();
 		_generatedMethodNames = generatedMethodNames;
+		_generatedMethodDeclarations = generatedMethodDeclarations;
 	}
 	
 	protected override string Resolve()
@@ -146,10 +153,13 @@ internal class EndpointCodeResolver : CodeResolverBase
 		};
 		if (response is { Schema: not null } && operationType is not OperationType.Head)
 			responseArguments.Add(modelVariable);
+
+		var methodDeclaration = $"public async Task<{responseType}> {methodName}({string.Join(", ", methodArguments.Append("CancellationToken cancellationToken = default"))})";
+		_generatedMethodDeclarations.Add(methodDeclaration);
 		
 		var methodCode = 
 			$$"""
-			  {{"\t"}}public async Task<{{responseType}}> {{methodName}}({{string.Join(", ", methodArguments.Append("CancellationToken cancellationToken = default"))}})
+			  {{"\t"}}{{methodDeclaration}}
 			  {{"\t"}}{
 			  {{"\t\t"}}{{callCodeBuilder}}
 			  {{"\t\t"}}return new {{responseType}}({{string.Join(", ", responseArguments)}});

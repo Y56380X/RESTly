@@ -8,10 +8,12 @@ namespace Restly.CodeResolvers;
 internal sealed class ClientCodeResolver : CodeResolverBase
 {
 	private readonly OpenApiDocument _apiSpecification;
-	
-	public ClientCodeResolver(OpenApiDocument apiSpecification)
+	private readonly List<string> _generatedMethodDeclarations;
+
+	public ClientCodeResolver(OpenApiDocument apiSpecification, List<string> generatedMethodDeclarations)
 	{
 		_apiSpecification = apiSpecification;
+		_generatedMethodDeclarations = generatedMethodDeclarations;
 	}
 
 	protected override string Resolve()
@@ -23,7 +25,7 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 		// => this has to be done before generating the components code 
 		var callsCode = _apiSpecification.Paths
 			.OrderBy(path => path.Key)
-			.Select(path => new EndpointCodeResolver(path.Key, path.Value, _apiSpecification, generatedMethodNames))
+			.Select(path => new EndpointCodeResolver(path.Key, path.Value, _apiSpecification, generatedMethodNames, _generatedMethodDeclarations))
 			.Select(ecr => ecr.GeneratedCode)
 			.Where(c => !string.IsNullOrWhiteSpace(c));
 
@@ -49,12 +51,13 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 			  using System.Threading;
 			  using System.Threading.Tasks;
 			  using System.Web;
+			  using static Restly.I{{clientClassName}};
 
 			  #nullable enable
 
 			  namespace Restly;
 
-			  public partial class {{clientClassName}} : IDisposable
+			  public partial class {{clientClassName}} : I{{clientClassName}}, IDisposable
 			  {
 			  {{"\t"}}private readonly HttpClient _httpClient;
 			  {{"\t"}}private readonly JsonSerializerOptions _jsonOptions;
@@ -80,8 +83,6 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 			  {{"\t"}}{
 			  {{"\t\t"}}_httpClient.Dispose();
 			  {{"\t"}}}
-
-			  {{string.Join("\n\n", modelsCode)}}
 			  }
 			  """;
 

@@ -81,15 +81,27 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			
 		if (readResult.Document is not {} apiSpecification)
 			return;
-			
+
+		var generatedMethodDeclarations = new List<string>();
+		
 		apiSpecification.Info.Title = clientName;
-		var apiClientCode = GenerateApiClientCode(apiSpecification);
+		
+		var apiClientCode = GenerateApiClientCode(apiSpecification, generatedMethodDeclarations);
 		context.AddSource($"{clientName}.g.cs", SourceText.From(apiClientCode, Encoding.UTF8));
+		
+		var apiClientInterface = GenerateApiClientInterface(apiSpecification, generatedMethodDeclarations);
+		context.AddSource($"I{clientName}.g.cs", SourceText.From(apiClientInterface, Encoding.UTF8));
 	}
 
-	private static string GenerateApiClientCode(OpenApiDocument apiSpecification)
+	private static string GenerateApiClientCode(OpenApiDocument apiSpecification, List<string> generatedMethodDeclarations)
 	{
-		var clientCodeResolver = new ClientCodeResolver(apiSpecification);
+		var clientCodeResolver = new ClientCodeResolver(apiSpecification, generatedMethodDeclarations);
 		return clientCodeResolver.GeneratedCode;
+	}
+
+	private static string GenerateApiClientInterface(OpenApiDocument apiSpecification, List<string> generatedMethodDeclarations)
+	{
+		var clientInterfaceResolver = new ClientInterfaceResolver(apiSpecification, generatedMethodDeclarations);
+		return clientInterfaceResolver.GeneratedCode;
 	}
 }
