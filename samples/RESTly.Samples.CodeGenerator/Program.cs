@@ -12,6 +12,10 @@ var readResult = await openApiReader.ReadAsync(
 		LoadExternalRefs = false
 	});
 
-var clientCodeResolver = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document);
+var generatedMethodDeclarations = new List<string>();
 
+var clientCodeResolver = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document, generatedMethodDeclarations);
 Console.WriteLine(clientCodeResolver.GeneratedCode);
+
+var clientInterfaceResolver = new Restly.CodeResolvers.ClientInterfaceResolver(readResult.Document, generatedMethodDeclarations);
+Console.WriteLine(clientInterfaceResolver.GeneratedCode);
