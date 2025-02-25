@@ -96,8 +96,14 @@ internal class EndpointCodeResolver : CodeResolverBase
 		var httpMethod = HttpMethodMapping[operationType];
 		var preparedPathTemplate = GeneratePreparedPathTemplate();
 
+		// Begin http request message generation
 		var callCodeBuilder = new StringBuilder();
 		callCodeBuilder.AppendLine($"""using var request = new HttpRequestMessage({httpMethod}, $"{preparedPathTemplate}");""");
+		
+		// Add code for header parameters
+		var headerParameters = parameters.Where(p => p.In == ParameterLocation.Header).ToArray();
+		foreach (var headerParameter in headerParameters)
+			callCodeBuilder.AppendLine($"""request.Headers.Add("{headerParameter.Name}", {headerParameter.Name.NormalizeCsName(capitalizeFirst: false)});""");
 
 		string? generateRequestModelType;
 		if (IsFormFileUpload(out var multipleFiles, out var formNames))
@@ -135,6 +141,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 			generateRequestModelType = null;
 		}
 		
+		// Generate code for sending request
 		callCodeBuilder.AppendLine($"{"\t\t"}using var response = await _httpClient.SendAsync(request, cancellationToken);");
 		var modelVariable = parameters.Any(p => p.Name == "model") ? "responseModel" : "model";
 		if (response is { Schema: not null } && operationType is not OperationType.Head)
