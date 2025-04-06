@@ -244,6 +244,23 @@ paths:
                     - $ref: '#/components/schemas/SomeTypeBase'
                     - $ref: '#/components/schemas/FinalType1'
                     - $ref: '#/components/schemas/FinalType2'
+  /header-parameter:
+    get:
+      tags:
+        - RESTly.Samples.SimpleApi
+      parameters:
+        - name: x-header-parameter
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
 components:
   schemas:
     FinalType1:

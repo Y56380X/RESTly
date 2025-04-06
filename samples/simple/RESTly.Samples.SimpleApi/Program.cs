@@ -161,6 +161,9 @@ app.MapPost("/derived-types", (SomeTypeBase item) =>
 app.MapGet("/derived-types", () => jsonDerivedItems)
 	.WithOpenApi();
 
+app.MapGet("/header-parameter", ([FromHeader(Name = "x-header-parameter")] string headerVal) => $"\"{headerVal}\"")
+	.WithOpenApi();
+
 #endregion
 
 app.Run();
