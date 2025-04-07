@@ -1,5 +1,5 @@
 ﻿using Microsoft.OpenApi.Reader;
-using Microsoft.OpenApi.Readers;
+using Microsoft.OpenApi.YamlReader;
 
 var openApiReader = new OpenApiYamlReader();
 var fileText = File.ReadAllText("./simple-api.yaml");
@@ -8,7 +8,6 @@ var readResult = await openApiReader.ReadAsync(
 	memory,
 	new OpenApiReaderSettings
 	{
-		ReferenceResolution = ReferenceResolutionSetting.ResolveLocalReferences,
 		LoadExternalRefs = false
 	});
 

@@ -5,6 +5,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.Interfaces;
+using Microsoft.OpenApi.Models.References;
 
 namespace Restly.CodeResolvers;
 
@@ -12,9 +14,9 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 {
 	private readonly string _modelTypeName;
 	private readonly OpenApiDocument _document;
-	private readonly OpenApiSchema _schema;
+	private readonly IOpenApiSchema _schema;
 
-	public ComponentCodeResolver(OpenApiDocument document, string modelTypeName, OpenApiSchema schema)
+	public ComponentCodeResolver(OpenApiDocument document, string modelTypeName, IOpenApiSchema schema)
 	{
 		_modelTypeName = modelTypeName.NormalizeCsName();
 		_document = document;
@@ -69,9 +71,9 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 
 	private string ResolveModel()
 	{
-		var baseModel = _schema.AllOf.FirstOrDefault(s => s.Reference != null);
+		var baseModel = _schema.AllOf.OfType<OpenApiSchemaReference>().FirstOrDefault(s => s.Reference != null);
 		var modelProperties = _schema.Properties
-			.Concat(baseModel?.Properties ?? new Dictionary<string, OpenApiSchema>())
+			.Concat(baseModel?.Properties ?? new Dictionary<string, IOpenApiSchema>())
 			.Concat(_schema.AllOf.Where(s => s != baseModel).SelectMany(s => s.Properties))
 			.ToArray();
 		var modelPropertyCodeFragments = modelProperties
@@ -81,7 +83,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			.ToArray();
 
 		var derivedTypes = _document.Components?.Schemas?
-			.Where(s1 => s1.Value.AllOf.Any(s2 => s2.Reference?.Id.Equals(_modelTypeName) ?? false))
+			.Where(s1 => s1.Value.AllOf.OfType<OpenApiSchemaReference>().Any(s2 => s2.Reference?.Id.Equals(_modelTypeName) ?? false))
 			.ToArray() ?? [];
 		
 		var propertyPrefix = modelProperties.Length > 1 ? "\n\t\t" : string.Empty;
@@ -133,9 +135,9 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 
 	private string GenerateSubModelName(string schemaName) => $"{_modelTypeName}{schemaName.Capitalize()}".NormalizeCsName();
 
-	private static bool IsSubModel(OpenApiSchema schema) => 
-		schema is { Type: JsonSchemaType.Object, Reference: null } 
-			   or { Type: JsonSchemaType.Array, Items: { Type: JsonSchemaType.Object, Reference: null } };
+	private static bool IsSubModel(IOpenApiSchema schema) => 
+		schema is OpenApiSchema { Type: JsonSchemaType.Object }
+			   or { Type: JsonSchemaType.Array, Items: OpenApiSchema { Type: JsonSchemaType.Object } };
 
 	private string GeneratePropertyName(string schemaName)
 	{
@@ -145,7 +147,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			: normalizedPropertyName;
 	}
 
-	private bool HasImplementableDefault(OpenApiSchema schema, out string? defaultValue)
+	private bool HasImplementableDefault(IOpenApiSchema schema, out string? defaultValue)
 	{
 		if (schema.Default == null)
 		{
@@ -167,7 +169,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 		}
 	}
 	
-	private string GeneratePropertyCode(KeyValuePair<string, OpenApiSchema> property, bool withJsonAnnotation)
+	private string GeneratePropertyCode(KeyValuePair<string, IOpenApiSchema> property, bool withJsonAnnotation)
 	{
 		var propertyName = GeneratePropertyName(property.Key);
 

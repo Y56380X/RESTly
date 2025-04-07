@@ -12,9 +12,9 @@
         <Deterministic>true</Deterministic>
 
         <PackageId>RESTly</PackageId>
-        <Version>1.0-rc2</Version>
+        <Version>1.0-rc3</Version>
         <Title>RESTly</Title>
-        <Description>A (experimental, WIP) C# source generator for generating REST clients out of OpenApi specifications.</Description>
+        <Description>A C# source generator for generating REST clients out of OpenApi specifications.</Description>
         <Copyright>Copyright (c) 2024-2025 Y56380X</Copyright>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -33,8 +33,8 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0"/>
 
-        <PackageReference Include="Microsoft.OpenApi" Version="2.0.0-preview4" PrivateAssets="all" GeneratePathProperty="true" />
-        <PackageReference Include="Microsoft.OpenApi.Readers" Version="2.0.0-preview4" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="Microsoft.OpenApi" Version="2.0.0-preview.16" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="Microsoft.OpenApi.YamlReader" Version="2.0.0-preview.16" PrivateAssets="all" GeneratePathProperty="true" />
         <PackageReference Include="SharpYaml" Version="2.1.1" PrivateAssets="all" GeneratePathProperty="true" />
     </ItemGroup>
 
@@ -44,7 +44,7 @@
         
         <None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
         <None Include="$(PkgMicrosoft_OpenApi)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <None Include="$(PkgMicrosoft_OpenApi_Readers)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="$(PkgMicrosoft_OpenApi_YamlReader)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
         <None Include="$(PkgSharpYaml)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 

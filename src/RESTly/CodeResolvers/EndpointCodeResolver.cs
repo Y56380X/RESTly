@@ -4,32 +4,33 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models.Interfaces;
 using RequestDefinition = (string ContentType, Microsoft.OpenApi.Models.OpenApiMediaType RequestType);
 
 namespace Restly.CodeResolvers;
 
 internal class EndpointCodeResolver : CodeResolverBase
 {
-	private static readonly IDictionary<OperationType, string> HttpMethodMapping =
-		new Dictionary<OperationType, string>
+	private static readonly IDictionary<HttpMethod, string> HttpMethodMapping =
+		new Dictionary<HttpMethod, string>
 		{
-			{ OperationType.Head  , "HttpMethod.Head"   },
-			{ OperationType.Get   , "HttpMethod.Get"    },
-			{ OperationType.Post  , "HttpMethod.Post"   },
-			{ OperationType.Put   , "HttpMethod.Put"    },
-			{ OperationType.Delete, "HttpMethod.Delete" }
+			{ HttpMethod.Head  , "HttpMethod.Head"   },
+			{ HttpMethod.Get   , "HttpMethod.Get"    },
+			{ HttpMethod.Post  , "HttpMethod.Post"   },
+			{ HttpMethod.Put   , "HttpMethod.Put"    },
+			{ HttpMethod.Delete, "HttpMethod.Delete" }
 		};
 
 	private readonly OpenApiComponents _components;
 	private readonly List<string> _generatedMethodNames;
 	private readonly List<string> _generatedMethodDeclarations;
-	private readonly OpenApiPathItem _pathItem;
+	private readonly IOpenApiPathItem _pathItem;
 	private readonly OpenApiDocument _document;
 	private readonly string _pathTemplate;
 
 	public EndpointCodeResolver(
 		string pathTemplate, 
-		OpenApiPathItem pathItem, 
+		IOpenApiPathItem pathItem, 
 		OpenApiDocument document, 
 		List<string> generatedMethodNames,
 		List<string> generatedMethodDeclarations)
@@ -50,7 +51,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		return string.Join("\n\n", callsCode);
 	}
 	
-	private string? GenerateOperationCode(string pathTemplate, OperationType operationType, OpenApiOperation operation)
+	private string? GenerateOperationCode(string pathTemplate, HttpMethod operationType, OpenApiOperation operation)
 	{
 		// Check for operation type support
 		if (!HttpMethodMapping.ContainsKey(operationType))
@@ -68,7 +69,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		return callsCode;
 	}
 
-	private string GenerateCallCode(string pathTemplate, OperationType operationType, 
+	private string GenerateCallCode(string pathTemplate, HttpMethod operationType, 
 		OpenApiOperation operation, RequestDefinition? request, OpenApiMediaType? response)
 	{
 		var parameters = operation.Parameters?.ToArray() ?? [];
@@ -81,7 +82,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 			.ToList();
 		string responseType;
 		string? generateResponseModelType;
-		if (response is { Schema: not null } && operationType is not OperationType.Head)
+		if (response is { Schema: not null } && !HttpMethod.Head.Equals(operationType))
 		{
 			var responseModelName = $"{methodName.Substring(0, methodName.Length - "Async".Length)}Result";
 			var modelType = response.Schema.ToCsType(_document, out var generate, responseModelName, forceNullable: true);
@@ -144,7 +145,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		// Generate code for sending request
 		callCodeBuilder.AppendLine($"{"\t\t"}using var response = await _httpClient.SendAsync(request, cancellationToken);");
 		var modelVariable = parameters.Any(p => p.Name == "model") ? "responseModel" : "model";
-		if (response is { Schema: not null } && operationType is not OperationType.Head)
+		if (response is { Schema: not null } && !HttpMethod.Head.Equals(operationType))
 		{
 			callCodeBuilder.AppendLine($"{"\t\t"}{response.Schema.ToCsType(_document, out _, generateResponseModelType, forceNullable: true)} {modelVariable};");
 			callCodeBuilder.AppendLine($"{"\t\t"}if (response.IsSuccessStatusCode)");
@@ -158,7 +159,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 			"response.IsSuccessStatusCode",
 			"response.StatusCode"
 		};
-		if (response is { Schema: not null } && operationType is not OperationType.Head)
+		if (response is { Schema: not null } && !HttpMethod.Head.Equals(operationType))
 			responseArguments.Add(modelVariable);
 
 		var methodDeclaration = $"public async Task<{responseType}> {methodName}({string.Join(", ", methodArguments.Append("CancellationToken cancellationToken = default"))})";
@@ -220,12 +221,12 @@ internal class EndpointCodeResolver : CodeResolverBase
 			// append with/by name extension by given operation parameters
 			if (operation.Parameters?.Any() == true)
 			{
-				methodNameFragments.Add(operationType is OperationType.Get or OperationType.Head ? "By" : "With");
+				methodNameFragments.Add(HttpMethod.Get.Equals(operationType) || HttpMethod.Head.Equals(operationType) ? "By" : "With");
 				methodNameFragments.AddRange(operation.Parameters.Select((p, i) => $"{(i == 0 ? null : "And")}{p.Name.NormalizeCsName()}"));
 			}
 			
 			// generate iterated appendix when generated name is already existing
-			var generatedMethodNameBase = $"{operationType}{string.Concat(methodNameFragments.Where(f => !string.IsNullOrWhiteSpace(f)))}";
+			var generatedMethodNameBase = $"{operationType.Method.ToLower().Capitalize()}{string.Concat(methodNameFragments.Where(f => !string.IsNullOrWhiteSpace(f)))}";
 			int? appendix = null;
 			while (_generatedMethodNames.Contains($"{generatedMethodNameBase}{appendix}Async"))
 				appendix = (appendix ?? 1) + 1;
@@ -233,7 +234,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 			return $"{generatedMethodNameBase}{appendix}Async";
 		}
 
-		string GenerateMethodArgumentCode(OpenApiParameter parameter) => 
+		string GenerateMethodArgumentCode(IOpenApiParameter parameter) => 
 			$"{parameter.Schema.ToCsType(_document)} {parameter.Name.NormalizeCsName(false)}";
 
 		string GeneratePreparedPathTemplate()
@@ -254,7 +255,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 				: baseUrl;
 			return path;
 
-			string GenerateParameterAssignment(OpenApiParameter parameter, string memberName) =>
+			string GenerateParameterAssignment(IOpenApiParameter parameter, string memberName) =>
 				parameter.Schema?.Type switch
 				{
 					JsonSchemaType.String when !parameter.Schema.Enum.Any()

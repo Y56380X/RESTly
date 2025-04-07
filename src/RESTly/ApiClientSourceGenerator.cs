@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Reader;
-using Microsoft.OpenApi.Readers;
+using Microsoft.OpenApi.YamlReader;
 using Restly.CodeResolvers;
 
 namespace Restly;
@@ -75,7 +75,6 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 		using var stream = new MemoryStream(Encoding.UTF8.GetBytes(definitionContent));
 		var readResult = openApiReader.Read(stream, new OpenApiReaderSettings
 		{
-			ReferenceResolution = ReferenceResolutionSetting.ResolveLocalReferences,
 			LoadExternalRefs = false
 		});
 			
