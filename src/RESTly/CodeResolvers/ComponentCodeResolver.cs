@@ -25,12 +25,12 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 
 	protected override string Resolve()
 	{
-		return _schema.Enum.Any() 
-			? ResolveEnum()
+		return _schema.Enum?.Any() == true 
+			? ResolveEnum(_schema.Enum)
 			: ResolveModel();
 	}
 
-	private string ResolveEnum()
+	private string ResolveEnum(IList<JsonNode> enumValues)
 	{
 		var enumCodeBuilder = new StringBuilder();
 		if (_schema.Description is { } enumDescription)
@@ -42,7 +42,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 		}
 		enumCodeBuilder.AppendLine($"{"\t"}public enum {_modelTypeName}");
 		enumCodeBuilder.AppendLine($"{"\t"}{{");
-		enumCodeBuilder.AppendLine(string.Join(",\n", _schema.Enum.Select(ResolveEnumValue)));
+		enumCodeBuilder.AppendLine(string.Join(",\n", enumValues.Select(ResolveEnumValue)));
 		enumCodeBuilder.Append($"{"\t"}}}");
 
 		return enumCodeBuilder.ToString();
@@ -53,7 +53,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			var (enumValueCode, realValueString) = kind switch
 			{
 				JsonValueKind.Number
-					=> ($"{"\t\t"}Value{enumValue.ToJsonString().NormalizeCsName()} = {enumValue.ToJsonString().NormalizeCsName()}", enumValue.ToJsonString().NormalizeCsName()),
+					=> ($"{"\t\t"}Value{enumValue.ToJsonString().Replace("-", "Negative").NormalizeCsName()} = {enumValue.ToJsonString().NormalizeCsName()}", enumValue.ToJsonString().NormalizeCsName()),
 				JsonValueKind.String when int.TryParse(enumValue.GetValue<string>(), out var intFromString)
 					=> ($"{"\t\t"}Value{intFromString} = {intFromString}", enumValue.GetValue<string>()),
 				JsonValueKind.String
