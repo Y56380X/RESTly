@@ -53,7 +53,7 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			var (enumValueCode, realValueString) = kind switch
 			{
 				JsonValueKind.Number
-					=> ($"{"\t\t"}Value{enumValue.ToJsonString().Replace("-", "Negative").NormalizeCsName()} = {enumValue.ToJsonString().NormalizeCsName()}", enumValue.ToJsonString().NormalizeCsName()),
+					=> ($"{"\t\t"}Value{enumValue.ToJsonString().Replace("-", "Negative").NormalizeCsName()} = {enumValue.ToJsonString().Replace(".", string.Empty)}", enumValue.ToJsonString()),
 				JsonValueKind.String when int.TryParse(enumValue.GetValue<string>(), out var intFromString)
 					=> ($"{"\t\t"}Value{intFromString} = {intFromString}", enumValue.GetValue<string>()),
 				JsonValueKind.String
