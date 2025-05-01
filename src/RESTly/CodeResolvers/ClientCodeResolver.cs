@@ -2,17 +2,18 @@
 // Licensed under the MIT License.
 
 using Microsoft.OpenApi.Models;
+using Restly.Models;
 
 namespace Restly.CodeResolvers;
 
 internal sealed class ClientCodeResolver : CodeResolverBase
 {
-	private readonly OpenApiDocument _apiSpecification;
-	private readonly List<string> _generatedMethodDeclarations;
+	private readonly OpenApiDocument		  _apiSpecification;
+	private readonly List<EndpointDefinition> _generatedMethodDeclarations;
 
-	public ClientCodeResolver(OpenApiDocument apiSpecification, List<string> generatedMethodDeclarations)
+	public ClientCodeResolver(OpenApiDocument apiSpecification, List<EndpointDefinition> generatedMethodDeclarations)
 	{
-		_apiSpecification = apiSpecification;
+		_apiSpecification		     = apiSpecification;
 		_generatedMethodDeclarations = generatedMethodDeclarations;
 	}
 

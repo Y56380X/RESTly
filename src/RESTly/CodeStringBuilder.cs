@@ -6,11 +6,28 @@ internal sealed class CodeStringBuilder
 {
 	private readonly StringBuilder _stringBuilder = new ();
 	private uint _indent;
+
+	public CodeStringBuilder() { }
 	
-	public CodeStringBuilder AppendLine(string s)
+	public CodeStringBuilder(string s) => _stringBuilder.Append(s);
+
+	public CodeStringBuilder AppendLine()
+	{
+		_stringBuilder.AppendLine();
+		return this;
+	}
+	
+	public CodeStringBuilder AppendLine(string l)
 	{
 		_stringBuilder.Append('\t', (int)_indent);
-		_stringBuilder.AppendLine(s);
+		_stringBuilder.AppendLine(l);
+		return this;
+	}
+
+	public CodeStringBuilder AppendLines(string[] ls)
+	{
+		foreach (var l in ls)
+			AppendLine(l);
 		return this;
 	}
 
@@ -25,4 +42,6 @@ internal sealed class CodeStringBuilder
 		_indent--;
 		return this;
 	}
+
+	public override string ToString() => _stringBuilder.ToString();
 }

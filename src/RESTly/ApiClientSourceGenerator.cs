@@ -10,6 +10,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Reader;
 using Microsoft.OpenApi.YamlReader;
 using Restly.CodeResolvers;
+using Restly.Models;
 
 namespace Restly;
 
@@ -81,7 +82,7 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 		if (readResult.Document is not {} apiSpecification)
 			return;
 
-		var generatedMethodDeclarations = new List<string>();
+		var generatedMethodDeclarations = new List<EndpointDefinition>();
 		
 		apiSpecification.Info.Title = clientName;
 		
@@ -92,13 +93,13 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 		context.AddSource($"I{clientName}.g.cs", SourceText.From(apiClientInterface, Encoding.UTF8));
 	}
 
-	private static string GenerateApiClientCode(OpenApiDocument apiSpecification, List<string> generatedMethodDeclarations)
+	private static string GenerateApiClientCode(OpenApiDocument apiSpecification, List<EndpointDefinition> generatedMethodDeclarations)
 	{
 		var clientCodeResolver = new ClientCodeResolver(apiSpecification, generatedMethodDeclarations);
 		return clientCodeResolver.GeneratedCode;
 	}
 
-	private static string GenerateApiClientInterface(OpenApiDocument apiSpecification, List<string> generatedMethodDeclarations)
+	private static string GenerateApiClientInterface(OpenApiDocument apiSpecification, List<EndpointDefinition> generatedMethodDeclarations)
 	{
 		var clientInterfaceResolver = new ClientInterfaceResolver(apiSpecification, generatedMethodDeclarations);
 		return clientInterfaceResolver.GeneratedCode;

@@ -1,5 +1,6 @@
 ﻿using Microsoft.OpenApi.Reader;
 using Microsoft.OpenApi.YamlReader;
+using Restly.Models;
 
 var openApiReader = new OpenApiYamlReader();
 var fileText = File.ReadAllText("./simple-api.yaml");
@@ -11,7 +12,7 @@ var readResult = await openApiReader.ReadAsync(
 		LoadExternalRefs = false
 	});
 
-var generatedMethodDeclarations = new List<string>();
+var generatedMethodDeclarations = new List<EndpointDefinition>();
 
 var clientCodeResolver = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document, generatedMethodDeclarations);
 Console.WriteLine(clientCodeResolver.GeneratedCode);

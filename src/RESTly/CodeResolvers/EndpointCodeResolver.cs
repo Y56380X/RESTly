@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Models.Interfaces;
+using Restly.Models;
 using RequestDefinition = (string ContentType, Microsoft.OpenApi.Models.OpenApiMediaType RequestType);
 
 namespace Restly.CodeResolvers;
@@ -23,7 +24,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 
 	private readonly OpenApiComponents _components;
 	private readonly List<string> _generatedMethodNames;
-	private readonly List<string> _generatedMethodDeclarations;
+	private readonly List<EndpointDefinition> _generatedMethodDeclarations;
 	private readonly IOpenApiPathItem _pathItem;
 	private readonly OpenApiDocument _document;
 	private readonly string _pathTemplate;
@@ -33,7 +34,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 		IOpenApiPathItem pathItem, 
 		OpenApiDocument document, 
 		List<string> generatedMethodNames,
-		List<string> generatedMethodDeclarations)
+		List<EndpointDefinition> generatedMethodDeclarations)
 	{
 		_pathTemplate = pathTemplate;
 		_pathItem = pathItem;
@@ -165,7 +166,7 @@ internal class EndpointCodeResolver : CodeResolverBase
 			responseArguments.Add(modelVariable);
 
 		var methodDeclaration = $"public async Task<{responseType}> {methodName}({string.Join(", ", methodArguments.Append("CancellationToken cancellationToken = default"))})";
-		_generatedMethodDeclarations.Add(methodDeclaration);
+		_generatedMethodDeclarations.Add(new EndpointDefinition(methodDeclaration, operation));
 		
 		var methodCode = 
 			$$"""
