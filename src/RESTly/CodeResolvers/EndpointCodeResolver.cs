@@ -102,9 +102,11 @@ internal class EndpointCodeResolver : CodeResolverBase
 		callCodeBuilder.AppendLine($"""using var request = new HttpRequestMessage({httpMethod}, $"{preparedPathTemplate}");""");
 		
 		// Add code for header parameters
-		var headerParameters = parameters.Where(p => p.In == ParameterLocation.Header).ToArray();
+		var headerParameters = parameters
+			.Where(p => !string.IsNullOrWhiteSpace(p.Name) && p.In == ParameterLocation.Header)
+			.ToArray();
 		foreach (var headerParameter in headerParameters)
-			callCodeBuilder.AppendLine($"""request.Headers.Add("{headerParameter.Name}", {headerParameter.Name.NormalizeCsName(capitalizeFirst: false)});""");
+			callCodeBuilder.AppendLine($"""{"\t\t"}request.Headers.Add("{headerParameter.Name}", {headerParameter.Name!.NormalizeCsName(capitalizeFirst: false)});""");
 
 		string? generateRequestModelType;
 		if (IsFormFileUpload(out var multipleFiles, out var formNames))
