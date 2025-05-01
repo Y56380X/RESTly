@@ -28,11 +28,6 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 			.Select(path => new EndpointCodeResolver(path.Key, path.Value, _apiSpecification, generatedMethodNames, _generatedMethodDeclarations))
 			.Select(ecr => ecr.GeneratedCode)
 			.Where(c => !string.IsNullOrWhiteSpace(c));
-
-		// Generate request and response models code
-		var modelsCode = _apiSpecification.Components.Schemas
-			.Select(schema => new ComponentCodeResolver(_apiSpecification, schema.Key, schema.Value))
-			.Select(mcr => mcr.GeneratedCode);
 		
 		var clientClassName = _apiSpecification.Info.Title.Split('.').Last().NormalizeCsName();
 		
