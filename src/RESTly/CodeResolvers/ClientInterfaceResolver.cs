@@ -30,7 +30,7 @@ internal sealed class ClientInterfaceResolver : CodeResolverBase
 		
 		// Generate endpoint call methods and XML description
 		var endpointCode = _generatedMethodDefinitions
-			.Select(Resolve)
+			.Select(ResolveEndpointDefinition)
 			.ToArray();
 		
 		var clientCodeBuilder = new CodeStringBuilder(
@@ -76,9 +76,9 @@ internal sealed class ClientInterfaceResolver : CodeResolverBase
 		return clientCodeBuilder.ToString();
 	}
 
-	private static string[] Resolve(EndpointDefinition endpointDefinition)
+	private static string[] ResolveEndpointDefinition(EndpointDefinition endpointDefinition)
 	{
-		var methodDeclaration = endpointDefinition.MethodDeclaration.Replace(" async ", " ");
+		var methodDeclaration = $"{endpointDefinition.MethodDeclaration.Replace(" async ", " ")};";
 		
 		var operation = endpointDefinition.SpecOperation;
 		if (operation.Summary == null || string.IsNullOrWhiteSpace(operation.Summary))
