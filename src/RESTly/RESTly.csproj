@@ -12,7 +12,7 @@
         <Deterministic>true</Deterministic>
 
         <PackageId>RESTly</PackageId>
-        <Version>1.0-rc6</Version>
+        <Version>1.0-rc7</Version>
         <Title>RESTly</Title>
         <Description>A C# source generator for generating REST clients out of OpenApi specifications.</Description>
         <Copyright>Copyright (c) 2024-2025 Y56380X</Copyright>
@@ -36,6 +36,16 @@
         <PackageReference Include="Microsoft.OpenApi" Version="2.0.0-preview.16" PrivateAssets="all" GeneratePathProperty="true" />
         <PackageReference Include="Microsoft.OpenApi.YamlReader" Version="2.0.0-preview.16" PrivateAssets="all" GeneratePathProperty="true" />
         <PackageReference Include="SharpYaml" Version="2.1.1" PrivateAssets="all" GeneratePathProperty="true" />
+
+        <!-- The mess to add System.Text.Json -->
+        <PackageReference Include="System.Text.Json" Version="8.0.5" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="System.Buffers" Version="4.6.1" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="System.Memory" Version="4.6.3" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="System.Numerics.Vectors" Version="4.6.1" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" PrivateAssets="all" GeneratePathProperty="true" />
+        <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" PrivateAssets="all" GeneratePathProperty="true" />
     </ItemGroup>
 
     <ItemGroup>
@@ -46,6 +56,16 @@
         <None Include="$(PkgMicrosoft_OpenApi)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
         <None Include="$(PkgMicrosoft_OpenApi_YamlReader)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
         <None Include="$(PkgSharpYaml)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+
+        <!-- The mess to add System.Text.Json -->
+        <None Include="$(PkgSystem_Text_Json)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(PkgSystem_Buffers)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(PkgSystem_Memory)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(PkgSystem_Numerics_Vectors)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(PkgSystem_Runtime_CompilerServices_Unsafe)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(PkgSystem_Text_Encodings_Web)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(PkgMicrosoft_Bcl_AsyncInterfaces)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Include="$(PkgSystem_Threading_Tasks_Extensions)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
     </ItemGroup>
 
 </Project>
