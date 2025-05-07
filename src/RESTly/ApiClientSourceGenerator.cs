@@ -44,10 +44,10 @@ public class ApiClientSourceGenerator : IIncrementalGenerator
 			{
 				AddApiClient(context, additionalTexts, clientDefinition, clientName);
 			}
-			catch
+			catch (Exception exception)
 			{
 				var errorDiagnostics = Diagnostic.Create(new DiagnosticDescriptor(
-					"RLY1000", "Error", $"Error during '{clientName}' client generation.", "Error", DiagnosticSeverity.Error, true), 
+					"RLY1000", "Error", $"Error during '{clientName}' client generation. ({exception})", "Error", DiagnosticSeverity.Error, true), 
 					null);
 				context.ReportDiagnostic(errorDiagnostics);
 			}

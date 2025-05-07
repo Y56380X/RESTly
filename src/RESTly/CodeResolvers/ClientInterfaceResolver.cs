@@ -20,7 +20,7 @@ internal sealed class ClientInterfaceResolver : CodeResolverBase
 	
 	protected override string Resolve()
 	{
-		var clientClassName = _apiSpecification.Info.Title.Split('.').Last().NormalizeCsName();
+		var clientClassName = _apiSpecification.Info.Title?.Split('.').Last().NormalizeCsName();
 
 		// Generate request and response models code
 		var modelsCode = (_apiSpecification.Components?.Schemas ?? new Dictionary<string, IOpenApiSchema>())

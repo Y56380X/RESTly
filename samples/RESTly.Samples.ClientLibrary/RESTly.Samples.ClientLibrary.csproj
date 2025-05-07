@@ -16,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="RESTly" Version="1.0.0-rc3" PrivateAssets="all" />
+        <PackageReference Include="RESTly" Version="1.0.0-rc5" PrivateAssets="all" />
     </ItemGroup>
     
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">

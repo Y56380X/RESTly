@@ -58,11 +58,11 @@ internal class EndpointCodeResolver : CodeResolverBase
 		if (!HttpMethodMapping.ContainsKey(operationType))
 			return null;
 
-		RequestDefinition? request = operation.RequestBody is { Content: var requestContent } && requestContent.Any()
+		RequestDefinition? request = operation.RequestBody is { Content: {} requestContent } && requestContent.Any()
 			? new RequestDefinition(requestContent.FirstOrDefault().Key, requestContent.FirstOrDefault().Value)
 			: null;
-		var response = operation.Responses
-			.SelectMany(r => r.Value.Content.Select(c => c.Value))
+		var response = operation.Responses?
+			.SelectMany(r => r.Value.Content?.Select(c => c.Value))
 			.FirstOrDefault();
 		
 		var callsCode = GenerateCallCode(pathTemplate, operationType, operation, request, response);

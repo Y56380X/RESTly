@@ -23,14 +23,14 @@ internal static class OpenApiExtensions
 		var resolvedSchemaType = schema.Type & ~JsonSchemaType.Null;
 		var baseType = resolvedSchemaType switch
 		{
-			JsonSchemaType.String  when schema.Enum.Any() 
-			                            && schema is OpenApiSchemaReference schemaReference => schemaReference.Reference.Id.NormalizeCsName(),
+			JsonSchemaType.String  when schema.Enum?.Any() == true && schema is OpenApiSchemaReference schemaReference 
+																		  => schemaReference.Reference.Id.NormalizeCsName(),
 			JsonSchemaType.String  when schema is { Format: "byte" }      => "byte[]",
 			JsonSchemaType.String  when schema is { Format: "uuid" }      => "Guid",
 			JsonSchemaType.String  when schema is { Format: "date-time" } => "DateTime",
 			JsonSchemaType.String                                         => "string",
-			JsonSchemaType.Integer when schema.Enum.Any() 
-			                            && schema is OpenApiSchemaReference schemaReference => schemaReference.Reference.Id.NormalizeCsName(),
+			JsonSchemaType.Integer when schema.Enum?.Any() == true && schema is OpenApiSchemaReference schemaReference 
+																		  => schemaReference.Reference.Id.NormalizeCsName(),
 			JsonSchemaType.Integer when schema is { Format: "int64" }     => "long",
 			JsonSchemaType.Integer                                        => "int",
 			JsonSchemaType.Number  when schema is { Format: "float" }     => "float",
@@ -46,12 +46,13 @@ internal static class OpenApiExtensions
 				                                             => referenceSchema.Type != null || (referenceSchema.AllOf?.Any() ?? false) == false || referenceSchema.Id == null
 					                                             ? referenceSchema.ToCsType(document, out generate, generatedName, forceNullable, stop - 1) 
 					                                             : reference.Id.NormalizeCsName(),
-			_         when schema is OpenApiSchemaReference { Reference: {} reference }  => reference.Id.NormalizeCsName(),
+			_         when schema is OpenApiSchemaReference { Reference: {} reference }  
+															 => reference.Id.NormalizeCsName(),
 			_		  when schema.OneOf 
 				           is { Count: > 0 } oneOf           => ResolveOneOf(oneOf),
 			_		  when schema.AnyOf
 						   is { Count: > 0 } anyOf           => ResolveAnyOf(anyOf),
-			_         when schema.Properties.Any()           => generatedName ?? "object",
+			_         when schema.Properties?.Any() == true  => generatedName ?? "object",
 			_                                                => "object"
 		};
 		generate = generate || (generatedName is not null && baseType.StartsWith(generatedName));
@@ -74,7 +75,7 @@ internal static class OpenApiExtensions
 			var allSchemas = document.Components?.Schemas ?? new Dictionary<string, IOpenApiSchema>();
 			var schemas = oneOf.OfType<OpenApiSchemaReference>().Select(s => allSchemas[s.Reference.Id]);
 			var baseTypes = schemas
-				.Select(s => s.AllOf.OfType<OpenApiSchemaReference>().FirstOrDefault(a => a.Reference != null)?.Reference?.Id)
+				.Select(s => s.AllOf?.OfType<OpenApiSchemaReference>().FirstOrDefault(a => a.Reference != null)?.Reference?.Id)
 				.OfType<string>()
 				.Distinct()
 				.ToArray();
