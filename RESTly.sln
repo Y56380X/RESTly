@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTly.Samples.NativeAotCon
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTly.Samples.ClientLibrary", "samples\RESTly.Samples.ClientLibrary\RESTly.Samples.ClientLibrary.csproj", "{9EF1462B-BC25-4497-9FEF-A09F90DE505F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RESTly.Test", "test\RESTly.Test\RESTly.Test.csproj", "{2A4A0718-DBA7-4BC1-B863-C794254ABC68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,10 @@ Global
 		{9EF1462B-BC25-4497-9FEF-A09F90DE505F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EF1462B-BC25-4497-9FEF-A09F90DE505F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EF1462B-BC25-4497-9FEF-A09F90DE505F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A4A0718-DBA7-4BC1-B863-C794254ABC68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A4A0718-DBA7-4BC1-B863-C794254ABC68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A4A0718-DBA7-4BC1-B863-C794254ABC68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A4A0718-DBA7-4BC1-B863-C794254ABC68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{142568B1-0A14-4591-B60A-3CA240863E2E} = {4FB632B4-8E79-4BCF-9C60-9EA05001804C}
