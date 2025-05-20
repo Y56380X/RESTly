@@ -40,6 +40,8 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 				enumCodeBuilder.AppendLine($"{'\t'}///\t{descriptionPart}");
 			enumCodeBuilder.AppendLine($"{'\t'}/// </summary>");
 		}
+
+		enumCodeBuilder.AppendLine($"{"\t"}{GeneratedCodeAttribute}");
 		enumCodeBuilder.AppendLine($"{"\t"}public enum {_modelTypeName}");
 		enumCodeBuilder.AppendLine($"{"\t"}{{");
 		enumCodeBuilder.AppendLine(string.Join(",\n", enumValues.Select(ResolveEnumValue)));
@@ -114,7 +116,8 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 			modelCodeBuilder.AppendLine($"{'\t'}[JsonPolymorphic]");
 		foreach (var derivedType in derivedTypes)
 			modelCodeBuilder.AppendLine($"{'\t'}[JsonDerivedType(typeof({derivedType.Key.NormalizeCsName()}), nameof({derivedType.Key.NormalizeCsName()}))]");
-
+		
+		modelCodeBuilder.AppendLine($"{"\t"}{GeneratedCodeAttribute}");
 		modelCodeBuilder.Append($"{"\t"}public record {_modelTypeName}({propertyPrefix}{string.Join(",\n\t\t", modelPropertyCodeFragments)}){inheritanceCode};");
 		
 		// Generate sub models

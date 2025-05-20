@@ -25,7 +25,7 @@ internal sealed class ClientInterfaceResolver : CodeResolverBase
 		// Generate request and response models code
 		var modelsCode = (_apiSpecification.Components?.Schemas ?? new Dictionary<string, IOpenApiSchema>())
 			.Select(schema => new ComponentCodeResolver(_apiSpecification, schema.Key, schema.Value))
-			.Select(mcr => $"\t{GeneratedCodeAttribute}\n{mcr.GeneratedCode}")
+			.Select(mcr => mcr.GeneratedCode)
 			.ToArray();
 		
 		// Generate endpoint call methods and XML description
