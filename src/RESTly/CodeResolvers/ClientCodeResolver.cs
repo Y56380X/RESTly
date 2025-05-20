@@ -39,6 +39,7 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 			  // Licensed under the MIT License.
 			  
 			  using System;
+			  using System.Collections.Generic;
 			  using System.Linq;
 			  using System.Net.Http;
 			  using System.Net.Http.Json;

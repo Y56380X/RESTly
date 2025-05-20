@@ -237,8 +237,9 @@ internal class EndpointCodeResolver : CodeResolverBase
 			return $"{generatedMethodNameBase}{appendix}Async";
 		}
 
-		string GenerateMethodArgumentCode(IOpenApiParameter parameter) => 
-			$"{parameter.Schema.ToCsType(_document)} {parameter.Name.NormalizeCsName(false)}";
+		string GenerateMethodArgumentCode(IOpenApiParameter parameter) => parameter.In == ParameterLocation.Header
+			? $"IEnumerable<string?> {parameter.Name.NormalizeCsName(false)}" // resolve to IEnumerable<string?> as it is supported by http request message headers
+			: $"{parameter.Schema.ToCsType(_document)} {parameter.Name.NormalizeCsName(false)}";
 
 		string GeneratePreparedPathTemplate()
 		{
