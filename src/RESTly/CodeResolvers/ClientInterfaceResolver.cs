@@ -25,7 +25,7 @@ internal sealed class ClientInterfaceResolver : CodeResolverBase
 		// Generate request and response models code
 		var modelsCode = (_apiSpecification.Components?.Schemas ?? new Dictionary<string, IOpenApiSchema>())
 			.Select(schema => new ComponentCodeResolver(_apiSpecification, schema.Key, schema.Value))
-			.Select(mcr => mcr.GeneratedCode)
+			.Select(mcr => $"\t{GeneratedCodeAttribute}\n{mcr.GeneratedCode}")
 			.ToArray();
 		
 		// Generate endpoint call methods and XML description
@@ -53,7 +53,8 @@ internal sealed class ClientInterfaceResolver : CodeResolverBase
 			#nullable enable
 
 			namespace Restly;
-
+			
+			{{GeneratedCodeAttribute}}
 			public interface I{{clientClassName}}
 			""");
 		
@@ -83,7 +84,7 @@ internal sealed class ClientInterfaceResolver : CodeResolverBase
 		
 		var operation = endpointDefinition.SpecOperation;
 		if (operation.Summary == null || string.IsNullOrWhiteSpace(operation.Summary))
-			return [methodDeclaration];
+			return [GeneratedCodeAttribute, methodDeclaration];
 		
 		var lines = new List<string>();
 		var operationSummary = operation.Summary.EndsWith(".") 
@@ -97,6 +98,7 @@ internal sealed class ClientInterfaceResolver : CodeResolverBase
 		lines.Add("/// <summary>");
 		lines.AddRange(summaryLines);
 		lines.Add("/// </summary>");
+		lines.Add(GeneratedCodeAttribute);
 		lines.Add(methodDeclaration);
 		
 		return lines.ToArray();

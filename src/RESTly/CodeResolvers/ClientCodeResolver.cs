@@ -54,6 +54,7 @@ internal sealed class ClientCodeResolver : CodeResolverBase
 
 			  namespace Restly;
 
+			  {{GeneratedCodeAttribute}}
 			  public partial class {{clientClassName}} : I{{clientClassName}}, IDisposable
 			  {
 			  {{"\t"}}private readonly HttpClient _httpClient;
