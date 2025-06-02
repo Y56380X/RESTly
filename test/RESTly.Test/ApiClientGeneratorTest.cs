@@ -198,4 +198,52 @@ public class Tests
 			Assert.That(interfaceCode, Is.Not.Empty);
 		});
 	}
+
+	[Test]
+	public async Task TestOVH_CloudV1()
+	{
+		var openApiReader = new OpenApiJsonReader();
+		using var httpClient = new HttpClient();
+		var readResult = await openApiReader.ReadAsync(
+			await httpClient.GetStreamAsync("https://eu.api.ovh.com/v1/cloud.json?format=openapi3"),
+			new OpenApiReaderSettings
+			{
+				LoadExternalRefs = false
+			});
+
+		var generatedMethodDeclarations = new List<EndpointDefinition>();
+
+		var clientCode = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		var interfaceCode = new Restly.CodeResolvers.ClientInterfaceResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		
+		Assert.Multiple(() =>
+		{
+			Assert.That(clientCode, Is.Not.Empty);
+			Assert.That(interfaceCode, Is.Not.Empty);
+		});
+	}
+
+	[Test]
+	public async Task TestOpenAI()
+	{
+		var openApiReader = new OpenApiYamlReader();
+		using var httpClient = new HttpClient();
+		var readResult = await openApiReader.ReadAsync(
+			await httpClient.GetStreamAsync("https://raw.githubusercontent.com/openai/openai-openapi/refs/heads/master/openapi.yaml"),
+			new OpenApiReaderSettings
+			{
+				LoadExternalRefs = false
+			});
+
+		var generatedMethodDeclarations = new List<EndpointDefinition>();
+
+		var clientCode = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		var interfaceCode = new Restly.CodeResolvers.ClientInterfaceResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		
+		Assert.Multiple(() =>
+		{
+			Assert.That(clientCode, Is.Not.Empty);
+			Assert.That(interfaceCode, Is.Not.Empty);
+		});
+	}
 }
