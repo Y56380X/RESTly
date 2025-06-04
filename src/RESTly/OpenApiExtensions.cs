@@ -23,14 +23,12 @@ internal static class OpenApiExtensions
 		var resolvedSchemaType = schema.Type & ~JsonSchemaType.Null;
 		var baseType = resolvedSchemaType switch
 		{
-			JsonSchemaType.String  when schema.Enum?.Any() == true && schema is OpenApiSchemaReference schemaReference 
-																		  => schemaReference.Reference.Id.NormalizeCsName(),
+			_ when schema.Enum?.Any() == true && schema is OpenApiSchemaReference { Reference.Id: {} referenceId } 
+																		  => referenceId.NormalizeCsName(),
 			JsonSchemaType.String  when schema is { Format: "byte" }      => "byte[]",
 			JsonSchemaType.String  when schema is { Format: "uuid" }      => "Guid",
 			JsonSchemaType.String  when schema is { Format: "date-time" } => "DateTime",
 			JsonSchemaType.String                                         => "string",
-			JsonSchemaType.Integer when schema.Enum?.Any() == true && schema is OpenApiSchemaReference schemaReference 
-																		  => schemaReference.Reference.Id.NormalizeCsName(),
 			JsonSchemaType.Integer when schema is { Format: "int64" }     => "long",
 			JsonSchemaType.Integer                                        => "int",
 			JsonSchemaType.Number  when schema is { Format: "float" }     => "float",
