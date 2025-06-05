@@ -44,7 +44,8 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 		enumCodeBuilder.AppendLine($"{"\t"}{GeneratedCodeAttribute}");
 		enumCodeBuilder.AppendLine($"{"\t"}public enum {_modelTypeName}");
 		enumCodeBuilder.AppendLine($"{"\t"}{{");
-		enumCodeBuilder.AppendLine(string.Join(",\n", enumValues.Select(ResolveEnumValue)));
+		var enumItemCode = string.Join(",\n", enumValues.Select(ResolveEnumValue).Where(v => v != null));
+		enumCodeBuilder.AppendLine(enumItemCode);
 		enumCodeBuilder.Append($"{"\t"}}}");
 
 		return enumCodeBuilder.ToString();
@@ -61,9 +62,12 @@ internal sealed class ComponentCodeResolver : CodeResolverBase
 				JsonValueKind.String
 					=> ($"{"\t\t"}{enumValue.GetValue<string>().NormalizeCsName()}", enumValue.GetValue<string>()),
 				JsonValueKind.Null
-					=> ($"{"\t\t"}Null", null),
+					=> (null, null),
 				_   => ($"{"\t\t"}{enumValue.ToJsonString().NormalizeCsName()}", enumValue.ToJsonString())
 			};
+
+			if (enumValueCode == null)
+				return null;
 			
 			return enumValueCode.Trim() == realValueString 
 				? enumValueCode 

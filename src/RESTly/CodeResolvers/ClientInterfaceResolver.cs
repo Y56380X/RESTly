@@ -71,7 +71,7 @@ internal sealed class ClientInterfaceResolver : CodeResolverBase
 
 		clientCodeBuilder
 			.AppendLine()
-			.AppendLine(string.Join("\n\n", modelsCode))
+			.AppendLine(string.Join("\n\n", modelsCode).TrimStart('\t'))
 			.PopIndent()
 			.AppendLine("}");
 		
