@@ -10,13 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="..\simple\doc\simple-api.yaml">
-        <Link>simple-api.yaml</Link>
-      </AdditionalFiles>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="RESTly" Version="1.0.0-rc7" PrivateAssets="all" />
+        <PackageReference Include="RESTly" Version="1.0.0" PrivateAssets="all" />
     </ItemGroup>
     
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
@@ -26,6 +20,12 @@
         </PackageReference>
         <PackageReference Include="System.Net.Http.Json" Version="8.0.1" />
         <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <AdditionalFiles Include="..\doc\simple-api.json">
+        <Link>simple-api.json</Link>
+      </AdditionalFiles>
     </ItemGroup>
 
 </Project>

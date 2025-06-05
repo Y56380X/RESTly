@@ -32,8 +32,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\..\samples\simple\doc\simple-api.yaml">
-        <Link>Data/simple-api.yaml</Link>
+      <Content Include="..\..\samples\doc\simple-api.json">
+        <Link>Data/simple-api.json</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>

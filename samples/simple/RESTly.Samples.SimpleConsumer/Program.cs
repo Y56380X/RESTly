@@ -1,6 +1,6 @@
 ﻿using Restly;
 
-[assembly:RestlyClient("simple-api.yaml", "SimpleApi")]
+[assembly:RestlyClient("simple-api.json", "SimpleApi")]
 
 using var httpClient = new HttpClient();
 httpClient.BaseAddress = new Uri("http://localhost:5048");
@@ -31,12 +31,13 @@ Console.WriteLine(floors.Model?.FirstOrDefault());
 var polyItems1 = await simpleApi.GetDerivedTypesAsync();
 foreach (var polyItem in polyItems1.Model ?? [])
 	Console.WriteLine(polyItem);
-await simpleApi.PostDerivedTypesAsync(new ISimpleApi.FinalType1("Name1", 100));
-await simpleApi.PostDerivedTypesAsync(new ISimpleApi.FinalType2("Name1", 0.1d, 200d));
+// TODO: currently disabled due to broken code generation
+// await simpleApi.PostDerivedTypesAsync(new ISimpleApi.FinalType1("Name1", 100));
+// await simpleApi.PostDerivedTypesAsync(new ISimpleApi.FinalType2("Name1", 0.1d, 200d));
 var polyItems2 = await simpleApi.GetDerivedTypesAsync();
 foreach (var polyItem in polyItems2.Model ?? [])
 	Console.WriteLine(polyItem);
 
 // Header parameters
-var headerInputResponse = await simpleApi.GetHeaderParameterByXHeaderParameterAsync("XHeaderP");
+var headerInputResponse = await simpleApi.GetHeaderParameterByXHeaderParameterAsync(["XHeaderP"]);
 Console.WriteLine(headerInputResponse);

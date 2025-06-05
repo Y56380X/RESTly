@@ -15,12 +15,12 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.OpenApi.YamlReader" Version="2.0.0-preview.16" />
     </ItemGroup>
-
+    
     <ItemGroup>
-      <Content Include="..\simple\doc\simple-api.yaml">
-        <Link>simple-api.yaml</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
+        <AdditionalFiles Include="..\doc\simple-api.json">
+            <Link>simple-api.json</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </AdditionalFiles>
     </ItemGroup>
 
 </Project>

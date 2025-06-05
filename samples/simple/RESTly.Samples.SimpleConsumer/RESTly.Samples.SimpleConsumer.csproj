@@ -8,13 +8,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="..\doc\simple-api.yaml">
-        <Link>simple-api.yaml</Link>
-      </AdditionalFiles>
+        <AdditionalFiles Include="..\..\doc\simple-api.json">
+            <Link>simple-api.json</Link>
+        </AdditionalFiles>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="RESTly" Version="1.0.0-rc3" />
+      <PackageReference Include="RESTly" Version="1.0.0" />
     </ItemGroup>
 
 </Project>

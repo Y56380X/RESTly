@@ -3,7 +3,7 @@ using Microsoft.OpenApi.YamlReader;
 using Restly.Models;
 
 var openApiReader = new OpenApiYamlReader();
-var fileText = File.ReadAllText("./simple-api.yaml");
+var fileText = File.ReadAllText("./simple-api.json");
 using var memory = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(fileText));
 var readResult = await openApiReader.ReadAsync(
 	memory,

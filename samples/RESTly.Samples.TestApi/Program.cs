@@ -2,29 +2,15 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddAntiforgery();
-
-// Add services to the container
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-	options.UseAllOfForInheritance();
-	options.UseOneOfForPolymorphism();
-	// todo: add resolver for discriminator name and value
-	// current implementation is opinionated on using '$type' and 'nameof()'
-});
+builder.Services.AddOpenApi();
+builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
-{
-	app.UseSwagger();
-	app.UseSwaggerUI();
-}
+	app.MapOpenApi();
 
-app.UseAntiforgery();
 app.UseHttpsRedirection();
 
 var summaries = new[]
@@ -107,6 +93,8 @@ app.MapGet("/items", () => items)
 
 app.MapGet("/items/{type}", (ItemType type) => items.Where(i => i.Type == type))
 	.WithOpenApi();
+
+app.MapPost("/some-enum", (SomeTypeWithNullableEnum someEnumHolder) => someEnumHolder);
 
 // Sample for an endpoint with `IFormFile` in combination with `.WithOpenApi()`
 // => the name of the parameter has to be given in the client.
@@ -194,3 +182,13 @@ record SomeTypeBase(string Name);
 sealed record FinalType1(string Name, int Value) : SomeTypeBase(Name);
 
 sealed record FinalType2(string Name, decimal Tolerance, decimal TargetValue) : SomeTypeBase(Name);
+
+record SomeTypeWithNullableEnum(Guid Uuid, SomeEnum? SomeEnumValue);
+
+enum SomeEnum
+{
+	Value1,
+	Value2,
+	// TODO: currently disabled due to double generation when nullable enum type
+	// Null
+}

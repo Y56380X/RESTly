@@ -9,8 +9,8 @@ public class Tests
 	[Test]
 	public async Task TestSimpleApi()
 	{
-		var openApiReader = new OpenApiYamlReader();
-		var fileText = await File.ReadAllTextAsync("./Data/simple-api.yaml");
+		var openApiReader = new OpenApiJsonReader();
+		var fileText = await File.ReadAllTextAsync("./Data/simple-api.json");
 		using var memory = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(fileText));
 		var readResult = await openApiReader.ReadAsync(
 			memory,

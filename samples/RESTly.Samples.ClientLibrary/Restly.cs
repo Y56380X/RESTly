@@ -1,3 +1,3 @@
 ﻿using Restly;
 
-[assembly:RestlyClient("simple-api.yaml", "SimpleApi")]
+[assembly:RestlyClient("simple-api.json", "SimpleApi")]
