@@ -226,14 +226,10 @@ public class Tests
 	[Test]
 	public async Task TestOpenAI()
 	{
-		var openApiReader = new OpenApiYamlReader();
 		using var httpClient = new HttpClient();
-		var readResult = await openApiReader.ReadAsync(
-			await httpClient.GetStreamAsync("https://raw.githubusercontent.com/openai/openai-openapi/refs/heads/master/openapi.yaml"),
-			new OpenApiReaderSettings
-			{
-				LoadExternalRefs = false
-			});
+		await using var specStream = await httpClient.GetStreamAsync(
+			"https://raw.githubusercontent.com/openai/openai-openapi/refs/heads/master/openapi.yaml");
+		var readResult = await ReadOpenApiYamlAsync(specStream);
 
 		var generatedMethodDeclarations = new List<EndpointDefinition>();
 
@@ -246,4 +242,184 @@ public class Tests
 			Assert.That(interfaceCode, Is.Not.Empty);
 		});
 	}
+
+	[Test]
+	public async Task TestOpenProjectJson()
+	{
+		using var httpClient = new HttpClient();
+		await using var specStream = await httpClient.GetStreamAsync("https://www.openproject.org/docs/api/v3/spec.json");
+		var readResult = await ReadOpenApiJsonAsync(specStream);
+
+		var generatedMethodDeclarations = new List<EndpointDefinition>();
+
+		var clientCode = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		var interfaceCode = new Restly.CodeResolvers.ClientInterfaceResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		
+		Assert.Multiple(() =>
+		{
+			Assert.That(clientCode, Is.Not.Empty);
+			Assert.That(interfaceCode, Is.Not.Empty);
+		});
+	}
+
+	[Test]
+	public async Task TestOpenProjectYaml()
+	{
+		using var httpClient = new HttpClient();
+		await using var specStream = await httpClient.GetStreamAsync("https://www.openproject.org/docs/api/v3/spec.yml");
+		var readResult = await ReadOpenApiYamlAsync(specStream);
+
+		var generatedMethodDeclarations = new List<EndpointDefinition>();
+
+		var clientCode = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		var interfaceCode = new Restly.CodeResolvers.ClientInterfaceResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		
+		Assert.Multiple(() =>
+		{
+			Assert.That(clientCode, Is.Not.Empty);
+			Assert.That(interfaceCode, Is.Not.Empty);
+		});
+	}
+	
+	[Test]
+	public async Task TestMittwald()
+	{
+		using var httpClient = new HttpClient();
+		await using var specStream = await httpClient.GetStreamAsync("https://api.mittwald.de/v2/openapi.json");
+		var readResult = await ReadOpenApiJsonAsync(specStream);
+
+		var generatedMethodDeclarations = new List<EndpointDefinition>();
+
+		var clientCode = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		var interfaceCode = new Restly.CodeResolvers.ClientInterfaceResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		
+		Assert.Multiple(() =>
+		{
+			Assert.That(clientCode, Is.Not.Empty);
+			Assert.That(interfaceCode, Is.Not.Empty);
+		});
+	}
+	
+	[Test]
+	public async Task TestIonosAuth()
+	{
+		using var httpClient = new HttpClient();
+		await using var specStream = await httpClient.GetStreamAsync("https://api.ionos.com/docs/public-authentication-v1.ga.yaml");
+		var readResult = await ReadOpenApiYamlAsync(specStream);
+
+		var generatedMethodDeclarations = new List<EndpointDefinition>();
+
+		var clientCode = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		var interfaceCode = new Restly.CodeResolvers.ClientInterfaceResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		
+		Assert.Multiple(() =>
+		{
+			Assert.That(clientCode, Is.Not.Empty);
+			Assert.That(interfaceCode, Is.Not.Empty);
+		});
+	}
+	
+	[Test]
+	public async Task TestIonosCloud()
+	{
+		using var httpClient = new HttpClient();
+		await using var specStream = await httpClient.GetStreamAsync("https://api.ionos.com/docs/public-cloud-v6.ga.yaml");
+		var readResult = await ReadOpenApiYamlAsync(specStream);
+
+		var generatedMethodDeclarations = new List<EndpointDefinition>();
+
+		var clientCode = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		var interfaceCode = new Restly.CodeResolvers.ClientInterfaceResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		
+		Assert.Multiple(() =>
+		{
+			Assert.That(clientCode, Is.Not.Empty);
+			Assert.That(interfaceCode, Is.Not.Empty);
+		});
+	}
+	
+	[Test]
+	public async Task TestIonosCdn()
+	{
+		using var httpClient = new HttpClient();
+		await using var specStream = await httpClient.GetStreamAsync("https://api.ionos.com/docs/public-cdn-v1.ga.yml");
+		var readResult = await ReadOpenApiYamlAsync(specStream);
+
+		var generatedMethodDeclarations = new List<EndpointDefinition>();
+
+		var clientCode = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		var interfaceCode = new Restly.CodeResolvers.ClientInterfaceResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		
+		Assert.Multiple(() =>
+		{
+			Assert.That(clientCode, Is.Not.Empty);
+			Assert.That(interfaceCode, Is.Not.Empty);
+		});
+	}
+	
+	[Test]
+	public async Task TestIonosContainerRegistry()
+	{
+		using var httpClient = new HttpClient();
+		await using var specStream = await httpClient.GetStreamAsync("https://api.ionos.com/docs/public-containerregistry-v1.ga.yml");
+		var readResult = await ReadOpenApiYamlAsync(specStream);
+
+		var generatedMethodDeclarations = new List<EndpointDefinition>();
+
+		var clientCode = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		var interfaceCode = new Restly.CodeResolvers.ClientInterfaceResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		
+		Assert.Multiple(() =>
+		{
+			Assert.That(clientCode, Is.Not.Empty);
+			Assert.That(interfaceCode, Is.Not.Empty);
+		});
+	}
+	
+	[Test]
+	public async Task TestIonosVpnGateway()
+	{
+		using var httpClient = new HttpClient();
+		await using var specStream = await httpClient.GetStreamAsync("https://api.ionos.com/docs/public-vpn-v1.ga.yml");
+		var readResult = await ReadOpenApiYamlAsync(specStream);
+
+		var generatedMethodDeclarations = new List<EndpointDefinition>();
+
+		var clientCode = new Restly.CodeResolvers.ClientCodeResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		var interfaceCode = new Restly.CodeResolvers.ClientInterfaceResolver(readResult.Document, generatedMethodDeclarations).GeneratedCode;
+		
+		Assert.Multiple(() =>
+		{
+			Assert.That(clientCode, Is.Not.Empty);
+			Assert.That(interfaceCode, Is.Not.Empty);
+		});
+	}
+	
+	#region Helper Methods
+
+	private static async Task<ReadResult> ReadOpenApiJsonAsync(Stream stream)
+	{
+		var openApiReader = new OpenApiJsonReader();
+		var readResult = await openApiReader.ReadAsync(
+			stream,
+			new OpenApiReaderSettings
+			{
+				LoadExternalRefs = false
+			});
+		return readResult;
+	}
+
+	private static async Task<ReadResult> ReadOpenApiYamlAsync(Stream stream)
+	{
+		var openApiReader = new OpenApiYamlReader();
+		var readResult = await openApiReader.ReadAsync(
+			stream,
+			new OpenApiReaderSettings
+			{
+				LoadExternalRefs = false
+			});
+		return readResult;
+	}
+
+	#endregion
 }
